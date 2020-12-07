@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const multer      = require('multer');
 const cors = require("cors");
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const upload = multer({});
@@ -13,6 +14,11 @@ const upload = multer({});
 const connection = mysql.createConnection(dbconfig);
 const app = express();
 
+const options = {
+key: fs.readFileSync('/opt/bitnami/apache2/conf/www.kwonsoryeong.tk.key'),
+cert: fs.readFileSync('/opt/bitnami/apache2/conf/www.kwonsoryeong.tk.crt')
+
+};
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
@@ -37,7 +43,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors({origin: true, credentials: true}));
 // configuration =========================
-app.set('port', process.env.PORT || 3306);
+app.set('port', process.env.PORT || 3000);
 
 app.get('/', (req, res) => {
   res.send('Root');
@@ -46,20 +52,24 @@ app.get('/', (req, res) => {
 app.post('/signup', (req, res) => {
   console.log(req.body.id);
   console.log(req.body.password);
-  connection.query('insert into Users set ?', req.body ,function(err,result){
-        res.json({result : 'success'});
+  connection.query('insert into users set ?', req.body ,function(err,result){
+       console.log(err); 
+	  res.json({result : 'success'});
     });
 });
 
 app.post('/signin', (req, res) => {
-  connection.query('SELECT * from Users where id=? and password=?', [req.body.id, req.body.password] , (error, rows) => {
+/*connection.query('show tables', (error, rows) => {
+	console.log(rows);
+});*/
+connection.query('SELECT * from users where id=? and password=?', [req.body.id, req.body.password] , (error, rows) => {
     if (error) throw error;
     console.log('User info is: ', rows);
     //if(rows){
       req.session.name = req.body.id;
       req.session.save();
     //}
-    //res.cookie('token',rows.id);
+    res.cookie('token',rows.id);
     /*res.cookie('id', req.cookies.id, {
       maxAge: 10000
     }); */
@@ -70,7 +80,7 @@ app.post('/signin', (req, res) => {
 app.post('/addBusiness', (req, res) => {
   req.body.id = req.session.name;
   console.log(req.body)
-  connection.query('insert into Business set ?', req.body ,function(err,result){
+  connection.query('insert into business set ?', req.body ,function(err,result){
     res.json({result : 'success'});
   });
 });
@@ -94,14 +104,62 @@ app.post('/writeContractform', (req, res) => {
   });
 });
 
+app.post('/writeContractform2', (req, res) => {
+  if(req.body.types1){
+    req.body.types1 = JSON.stringify(req.body.types1);
+    req.body.types2 = JSON.stringify(req.body.types2);
+    req.body.types3 = JSON.stringify(req.body.types3);
+  }
+  if(req.body.id == '/'){
+     req.body.id = req.session.name
+  }
+  console.log(req.body)
+  connection.query('insert into contractform2 set ?', req.body ,function(err,result){
+      console.log("성공");
+      res.json({result : 'success'});
+  });
+});
+app.post('/selectContractform2', (req, res) => {
+
+	  console.log(req.body);
+
+	  let id='';
+
+	  if( req.body.id ){
+
+		      id= req.body.id
+
+		    }
+
+	  else{
+
+		      id= req.session.name
+
+		    }
+
+	  console.log(id, req.body.bang)
+
+	  connection.query('SELECT * from contractform2 where id=? and bang=?', [id, req.body.bang] , (error, rows) => {
+
+		      if (error) throw error;
+
+		      console.log(rows);
+
+		      res.send(rows);
+
+		    });
+
+});
 app.post('/alterState', (req, res) => {
   console.log(req.body)
   if(req.body.id == '/'){
     req.body.id = req.session.name
   }
   //req.body.id = req.session.name;
-  connection.query('UPDATE worker SET state=? WHERE business=? and workername=?', [req.body.type, req.body.bang, req.session.name ] ,function(err,result){
-    console.log("성공");
+  connection.query('UPDATE worker SET state=?, pay=?, mon=?, tue=?, wed=?, thu=?, fri=?, sat=?, sun=?, eachtime=?  WHERE business=? and workername=?', [req.body.type, req.body.pay, req.body.mon, req.body.tue, req.body.wed, req.body.thu, req.body.fri, req.body.sat, req.body.sun,req.body.eachtime, req.body.bang, req.session.name ] ,function(err,result){
+
+	    
+	console.log("성공");
     res.json({result : 'success'});
   });
 });
@@ -115,7 +173,12 @@ app.post('/updateContractform', (req, res) => {
     res.json({result : 'success'});
   });
 });
-
+app.post('/updateContractform2', (req, res) => {
+	console.log(req.body.type)	
+	connection.query('UPDATE contractform2 SET EmployeeAddress=?, EmployeePhone=?, EmployeeName=?, type=? WHERE bang=? and id=?', [req.body.EmployeeAddress, req.body.EmployeePhone, req.body.EmployeeName, req.body.type, req.body.bang, req.body.id ] ,function(err,result){
+        res.json({result : 'success'});
+    });
+});
 app.post('/selectContractform', (req, res) => {
   console.log(req.body);
   let id='';
@@ -258,18 +321,24 @@ app.post('/addWork', (req, res) => {
 });
 
 app.post('/selectBusiness', (req, res) => {
-  console.log(req.headers);
   console.log(req.session.name);
-  console.log("모게?"+req.session.id);
+  console.log("모게????"+req.session.id);
   console.log(req.body.id);
-  connection.query('SELECT * from Business where id=?', [req.session.name] , (error, rows) => {
+  connection.query('SELECT * from business where id=?', [req.session.name] , (error, rows) => {
     if (error) throw error;
     console.log('User info is: ', rows);
     //res.cookie('token',rows.id);
     res.send(rows);
   });
 });
+app.post('/selectBusinessByName', (req, res) => {
 
+	connection.query('SELECT * from business where bname=?', [req.body.bname] , (error, rows) => {
+		if (error) throw error;
+		console.log('User info is: ', rows);
+		res.send(rows);
+	  });
+});
 app.post('/selectWorkerByType', (req, res) => {
   console.log(req.body.business+" + "+ req.body.type);
   connection.query('SELECT * from worker where business=? and type=?', [req.body.business, req.body.type] , (error, rows) => {
@@ -482,10 +551,10 @@ app.post('/selectWorkerAsDay', (req, res) => {
 app.post('/uploadContractform', upload.any(), handleUpload);
 
 app.post('/uploadSign', upload.any(), handleUpload);
-
+https.createServer(options, app).listen(3000);
+/*
 let server = app.listen(app.get('port'), () => {
     var host = server.address().address;
     var port = server.address().port;
     console.log('running at http://' + host + ':' + port)
-});
-
+})*/
