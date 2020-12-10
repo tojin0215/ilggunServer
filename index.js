@@ -54,7 +54,7 @@ app.post('/signup', (req, res) => {
   console.log(req.body.password);
   connection.query('insert into users set ?', req.body ,function(err,result){
        console.log(err); 
-	  res.json({result : 'success'});
+	  res.json({result : result, err:err});
     });
 });
 
@@ -350,7 +350,7 @@ app.post('/selectWorkerByType', (req, res) => {
 });
 
 app.post('/selectWorker', (req, res) => {
-  connection.query('SELECT * from worker where business=?', [req.body.business] , (error, rows) => {
+  connection.query('SELECT * from worker where state=2 and business=?', [req.body.business] , (error, rows) => {
     if (error) throw error;
     console.log('worker info is: ', rows);
     //res.cookie('token',rows.id);
@@ -416,9 +416,11 @@ app.post('/selectWorkTodo', (req, res) => {
   if(req.body.worker=='/'){
     req.body.worker=req.session.name;
   }
+  console.log(req.body); 
   connection.query(`SELECT * from worktodo where bang=? and year=? and month=? and date=? and worker=?`, [req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker] , (error, rows) => {
     if (error) throw error;
     console.log('Todo List is: ', rows);
+	  console.log(rows);
       //res.cookie('token',rows.id);
       res.send(rows);
   });
@@ -456,8 +458,14 @@ app.post('/addWorkTodo', (req, res) => {
 
 app.post('/addWorkTodoCheck', (req, res) => {
   let todo = JSON.stringify(req.body.todo)
-  connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo, req.body.bang, req.body.year, req.body.month, req.body.date, req.session.name] ,function(err,result){
+  let worker;
+	console.log(req.body);
+	if(req.body.worker=="/"){
+		worker=req.session.name;
+	}
+	connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo, req.body.bang, req.body.year, req.body.month, req.body.date, req.session.name] ,function(err,result){
     console.log(err, result)
+	res.send(result);
   });
 });
 
