@@ -10,13 +10,13 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const upload = multer({});
-
+const crypto = require('crypto');
 const connection = mysql.createConnection(dbconfig);
 const app = express();
 
 const options = {
-key: fs.readFileSync('/opt/bitnami/apache2/conf/www.kwonsoryeong.tk.key'),
-cert: fs.readFileSync('/opt/bitnami/apache2/conf/www.kwonsoryeong.tk.crt')
+key: fs.readFileSync('/opt/bitnami/apache2/conf/www.toojin.cf.key'),
+cert: fs.readFileSync('/opt/bitnami/apache2/conf/www.toojin.cf.crt')
 
 };
 app.use(express.json());
@@ -334,40 +334,72 @@ app.get('/privacy', (req, res) => {
 
 
 app.post('/signup', (req, res) => {
-  console.log(req.body.id);
-  console.log(req.body.password);
-  connection.query('insert into users set ?', req.body ,function(err,result){
-       console.log(err); 
-	  res.json({result : result, err:err});
+  
+  crypto.randomBytes(64, (err, buf) => {
+    crypto.pbkdf2(req.body.password, buf.toString('base64'), 123583, 64, 'sha512', (err, key) => {
+	req.body['salt'] = buf.toString('base64');
+        req.body['password']= key.toString('base64'); 
+	connection.query('insert into users set ?', req.body ,function(err,result){
+		res.json({result : result, err:err});
+	    });
+
+      });
+  })
+});
+
+app.post('/signupByCode', (req, res) => {
+  crypto.randomBytes(64, (err, buf) => {
+    crypto.pbkdf2(req.body.password, buf.toString('base64'), 123583, 64, 'sha512',(err, key) => {
+	req.body['salt'] = buf.toString('base64');
+	req.body['password']= key.toString('base64'); 
+	connection.query('insert into users set ?', req.body ,function(err,result){
+		res.json({result : result, err:err});
+	});
     });
+  })
 });
 
 app.post('/signin', (req, res) => {
-/*connection.query('show tables', (error, rows) => {
-	console.log(rows);
-});*/
-connection.query('SELECT * from users where id=? and password=?', [req.body.id, req.body.password] , (error, rows) => {
-	console.log(error);
-	if (error) throw error;
-    console.log('User info is: ', rows);
-    //if(rows){
-      req.session.name = req.body.id;
-      req.session.save();
-    //}
-    res.cookie('token',rows.id);
-    /*res.cookie('id', req.cookies.id, {
-      maxAge: 10000
-    }); */
-    res.send(rows);
-  });
-});
+	console.log("hello1");
+	connection.query('SELECT * from users where BINARY id=?', [req.body.id] , (error, rows) => {
+	if(rows[0]){	
+	crypto.pbkdf2(req.body.password, rows[0].salt, 123583, 64, 'sha512', (err, key) => {
+		console.log("hello2");
+		if(rows[0].password == key.toString('base64')){
+			res.send(rows);
+		}
+		else{
+			res.send();
+		}
+	});}
+	else{
+		res.send();
+		console.log("hello3");
+	}
+})});
+
+app.post('/signinByCode', (req, res) => {
+	connection.query('SELECT * from users where BINARY code=?', [req.body.code] , (error,rows) => {
+	  if(rows[0]){
+	    crypto.pbkdf2(req.body.code, rows[0].salt, 123583, 64, 'sha512', (err,key) => {
+	      if(rows[0].password == key.toString('base64')){
+		res.send(rows);
+	      }
+	      else{
+		res.send();
+	      }
+	    });
+	  }
+	  else{
+	    res.send();
+	  }
+})});
 
 app.post('/addBusiness', (req, res) => {
-  req.body.id = req.session.name;
   console.log(req.body)
   connection.query('insert into business set ?', req.body ,function(err,result){
    	console.log(err); 
-	  res.json({result : 'success'});
+	  res.json({err:err,result:result});
   });
 });
 app.post('/writeContractform', (req, res) => {
@@ -379,6 +411,7 @@ app.post('/writeContractform', (req, res) => {
   req.body.types4 = JSON.stringify(req.body.types4);
   req.body.value4 = JSON.stringify(req.body.value4);
   }
+  console.log(req.body.types1, req.body.types2, req.body.types3, req.body.types4); 
   if(req.body.id == '/'){
     req.body.id = req.session.name
   }
@@ -442,7 +475,7 @@ app.post('/alterState', (req, res) => {
     req.body.id = req.session.name
   }
   //req.body.id = req.session.name;
-  connection.query('UPDATE worker SET state=?, pay=?, mon=?, tue=?, wed=?, thu=?, fri=?, sat=?, sun=?, eachtime=?  WHERE business=? and workername=?', [req.body.type, req.body.pay, req.body.mon, req.body.tue, req.body.wed, req.body.thu, req.body.fri, req.body.sat, req.body.sun,req.body.eachtime, req.body.bang, req.session.name ] ,function(err,result){
+  connection.query('UPDATE worker SET state=?, pay=?, mon=?, tue=?, wed=?, thu=?, fri=?, sat=?, sun=?, eachtime=?, startdate=?, enddate=? WHERE business=? and workername=?', [req.body.type, req.body.pay, req.body.mon, req.body.tue, req.body.wed, req.body.thu, req.body.fri, req.body.sat, req.body.sun,req.body.eachtime,req.body.startdate, req.body.enddate, req.body.bang, req.body.id ] ,function(err,result){
 
 	    
 	console.log(err);
@@ -485,21 +518,31 @@ app.post('/selectContractform', (req, res) => {
 
 app.post('/selectReceivedMessage', (req, res) => {
   
-  connection.query('SELECT * from message where t=?', [req.session.name] , (error, rows) => {
+  connection.query('SELECT * from message where t=?', [req.body.t] , (error, rows) => {
     console.log(error);
     res.send(rows);
   });
 });
 
+app.post('/selectReceivedNewMessage', (req, res) => {
+	console.log(req.body.t);
+	connection.query('SELECT * from message where t=? and r=0', [req.body.t] , (error, rows) => {
+			      console.log(rows);
+			      res.send(rows);
+		  });
+});
+
 app.post('/addBang', (req, res) => {
-  connection.query('SELECT * from users where id=?', [req.session.name] , (error, rows) => {
+  connection.query('SELECT * from users where id=?', [req.body.id] , (error, rows) => {
 	  console.log(error);
 	  let b = JSON.parse(rows[0].bang);
     console.log(req.body);
-    b[req.body.bang]=0
+    b[req.body.bang]=1;
     console.log(b)
     let bang = JSON.stringify(b);
-    connection.query('UPDATE users SET bang=? WHERE id=?', [bang, req.session.name] ,function(err,result){
+    
+	console.log("????", bang, req.body.id);
+	  connection.query('UPDATE users SET bang=? WHERE id=?', [bang, req.body.id] ,function(err,result){
       console.log(err);
       res.json({result : 'success'});
     });
@@ -508,20 +551,15 @@ app.post('/addBang', (req, res) => {
 
 app.post('/selectSentMessage', (req, res) => {
   
-  connection.query('SELECT * from message where f=?', [req.session.name] , (error, rows) => {
+  connection.query('SELECT * from message where f=?', [req.body.id] , (error, rows) => {
     console.log(error);
 
     res.send(rows);
   });
 });
-app.post('/SendMessage', (req, res) => {
-  console.log(req.body.f);
-  if(req.body.f!='system'){
-    req.body['f']=req.session.name;
-    req.body['message']= req.body['message'];
-  }
-  else{
-    req.body['message']= req.session.name+req.body['message'];
+app.post('/sendMessage', (req, res) => {
+  if(req.body.system==1 && req.body.type!=3){
+    req.body['message']= req.body.f + req.body['message'];
   }
   
   console.log(req.body);
@@ -530,14 +568,22 @@ app.post('/SendMessage', (req, res) => {
 	  res.json({result : 'success'});
   });
 });
+
+app.post('/alterReadMessage', (req, res) => {
+	connection.query('UPDATE message SET r=1 WHERE ind=?', [req.body.ind], function(err,result){
+		console.log(req.body.ind);	
+	console.log(err, result);res.send(result);	
+	});
+});
+
 app.post('/updateCommute', (req, res) => {
   
-  connection.query('SELECT bang from users where id=?', [req.session.name] , (error, rows) => {
+  connection.query('SELECT bang from users where id=?', [req.body.id] , (error, rows) => {
     console.log(error); console.log(rows);
     let row = JSON.parse(rows[0].bang);
     row[req.body.bang] = row[req.body.bang]==1?0:1;
     console.log(JSON.stringify(row)+" "+ req.session.name+"3");
-    connection.query('UPDATE users SET bang=? WHERE id=?', [JSON.stringify(row), req.session.name] ,function(err,result){
+    connection.query('UPDATE users SET bang=? WHERE id=?', [JSON.stringify(row), req.body.id] ,function(err,result){
       //res.json({result : 'success'});
     });
    console.log(req.session.name+"2");
@@ -546,23 +592,33 @@ app.post('/updateCommute', (req, res) => {
 
     console.log(h, m, req.session.name, new Date().getDate())
     
-if(row[req.body.bang]==1){
-	      connection.query('insert into timelog set ?', {bang:req.body.bang, workername:req.session.name, year:new Date().getFullYear(),month:new Date().getMonth()+1, date:new Date().getDate() , goto:h+m} ,function(err,result){
-
-
-		            });
-	    }
+if(row[req.body.bang]==0){
+	connection.query('select * from timelog where bang=? and workername=? and year=? and month=? and date=?', [req.body.bang, req.body.id, new Date().getFullYear(),new Date().getMonth()+1, new Date().getDate()] , (err,rows) => {
+		console.log(err); 
+		if(rows.length==0){
+			console.log("11111");  
+			connection.query('insert into timelog set ?', {bang:req.body.bang, workername:req.body.id, year:new Date().getFullYear(),month:new Date().getMonth()+1, date:new Date().getDate() , goto:h+m} ,function(err,row){
+				console.log(err); res.json({result : 'b'});
+			});
+		}
+		else{
+			console.log("2222");
+	connection.query('UPDATE timelog SET goto=? WHERE bang=? and workername=? and year=? and month=? and date=? and leavee=?', [(h+m) , req.body.bang, req.body.id, (new Date().getFullYear()), (new Date().getMonth()+1), new Date().getDate(),rows[0].leavee] ,function(err,result){
+				console.log(err, result); res.json({result:'b'});
+			});}}); }
 	else{
-      connection.query('select * from timelog where bang=? and workername=? and year=? and month=? and date=?', [req.body.bang, req.session.name, new Date().getFullYear(),new Date().getMonth()+1, new Date().getDate()] , (err,rows) => {
+		connection.query('select * from timelog where bang=? and workername=? and year=? and month=? and date=?', [req.body.bang, req.body.id, new Date().getFullYear(),new Date().getMonth()+1, new Date().getDate()] , (err,rows) => {
         console.log(err);
         if(rows.length==0){
-          connection.query('insert into timelog set ?', {bang:req.body.bang, workername:req.session.name, year:new Date().getFullYear(),month:new Date().getMonth()+1, date:new Date().getDate() , leavee:h+m} ,function(err,row){
-            console.log(err); res.json({result : 'success'});
+           console.log("11111"); 
+	   connection.query('insert into timelog set ?', {bang:req.body.bang, workername:req.body.id, year:new Date().getFullYear(),month:new Date().getMonth()+1, date:new Date().getDate() , leavee:h+m} ,function(err,row){
+            console.log(err); res.json({result : 'a'});
           });
         }
         else{
-          connection.query('UPDATE timelog SET leavee=? WHERE bang=? and workername=? and year=? and month=? and date=? and goto=?', [(h+m) , req.body.bang, req.session.name, (new Date().getFullYear()), (new Date().getMonth()+1), new Date().getDate(), rows[0].goto] ,function(err,result){
-            console.log(err, result)
+		console.log("2222");
+          connection.query('UPDATE timelog SET leavee=? WHERE bang=? and workername=? and year=? and month=? and date=? and goto=?', [(h+m) , req.body.bang, req.body.id, (new Date().getFullYear()), (new Date().getMonth()+1), new Date().getDate(), rows[0].goto] ,function(err,result){
+            console.log(err, result); res.json({result:'a'})
           });
         }
       });
@@ -614,10 +670,7 @@ if(rows.length == 0){
 });
 
 app.post('/selectBusiness', (req, res) => {
-  console.log(req.session.name);
-  console.log("모게????"+req.session.id);
-  console.log(req.body.id);
-  connection.query('SELECT * from business where id=?', [req.session.name] , (error, rows) => {
+  connection.query('SELECT * from business where id=?', [req.body.id] , (error, rows) => {
    console.log(error); 
     console.log('User info is: ', rows);
     //res.cookie('token',rows.id);
@@ -667,7 +720,7 @@ app.post('/selectWorkerEach', (req, res) => {
 });
 
 app.post('/selectBusinessByWorker', (req, res) => {
-  connection.query('SELECT * from users where id=?', [req.session.name] , (error, rows) => {
+  connection.query('SELECT * from users where id=?', [req.body.id] , (error, rows) => {
 	console.log(error);    
 	  if (error) throw error;
     console.log('worker info is: ', rows);
@@ -675,7 +728,43 @@ app.post('/selectBusinessByWorker', (req, res) => {
     res.send(rows);
   });
 });
+app.post('/deleteWorker', (req, res) => {
+	connection.query('SELECT * from users where id=?', [req.body.workername] , (error, rows) => {
 
+		let bangs = JSON.parse(rows[0].bang);
+		delete bangs[req.body.business];	
+		console.log(bangs);
+		bangs = JSON.stringify(bangs);
+		connection.query('UPDATE users SET bang=? WHERE id=?', [bangs, req.body.workername] ,function(err,result){
+			console.log(err)
+		});
+		
+	});
+	
+	connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
+	if(rows[0].type==2){
+		connection.query('DELETE from contractform where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
+		)}else{
+		connection.query('DELETE from contractform2 where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
+		)}
+	});
+	
+	connection.query('DELETE from worker where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
+		connection.query('DELETE from overtimework where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
+		console.log("error : "+error); 
+		});
+	});
+
+	connection.query('DELETE from timelog where bang=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
+		console.log("error : "+error);
+	});
+	
+	connection.query('DELETE from worktodo where bang=? and worker=?', [req.body.business, req.body.workername] , (error, rows) => {
+			console.log("error : "+error);
+			res.send(rows);
+	});
+
+});
 
 
 app.post('/selectImg', (req, res) => {
@@ -686,7 +775,7 @@ app.post('/selectImg', (req, res) => {
 
 app.post('/selectOvertimework', (req, res) => {
   console.log(req.body);
-  connection.query(`SELECT * from overtimework where year=? and month=?`, [req.body.year, req.body.month] , (error, rows) => {
+  connection.query(`SELECT * from overtimework where business=? and year=? and month=?`, [req.body.business, req.body.year, req.body.month] , (error, rows) => {
     console.log(error) 
     console.log('+++++++++++++++++++++++++ ', rows);
       //res.cookie('token',rows.id);
@@ -706,11 +795,6 @@ app.post('/selectTimelog', (req, res) => {
 });
 
 app.post('/selectWorkTodo', (req, res) => {
-  console.log(req.body);
-  console.log(">>>>>>>>>>>>>>>")
-  if(req.body.worker=='/'){
-    req.body.worker=req.session.name;
-  }
   console.log(req.body); 
   connection.query(`SELECT * from worktodo where bang=? and year=? and month=? and date=? and worker=?`, [req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker] , (error, rows) => {
    console.log(error); 
@@ -756,10 +840,7 @@ app.post('/addWorkTodoCheck', (req, res) => {
   let todo = JSON.stringify(req.body.todo)
   let worker;
 	console.log(req.body);
-	if(req.body.worker=="/"){
-		worker=req.session.name;
-	}
-	connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo, req.body.bang, req.body.year, req.body.month, req.body.date, req.session.name] ,function(err,result){
+	connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo, req.body.bang, req.body.year, req.body.month, req.body.date, req.body.id] ,function(err,result){
     console.log(err, result)
 	res.send(result);
   });
@@ -785,13 +866,17 @@ app.post('/deleteWorkTodo', (req, res) => {
 });
 app.post('/selectSign', (req, res) => {
   let r;
+	console.log("id2:");
+	console.log(req.body.id2);
   if(req.body.id=='/'){
 	req.body.id=req.session.name;
   }
   connection.query(`SELECT * from users where id=?`, [req.body.id] , (error, rows) => {
-    console.log(error, rows)
+   connection.query(`SELECT * from users where id=?`, [req.body.id2] , (error, rows2) => { 
+	rows.push(rows2[0]); 
+	  console.log(error, rows)
     res.send(rows)
-  });
+   });});
 });
 app.post('/selectWorkerAsDay', (req, res) => {
   let r;
@@ -860,11 +945,11 @@ app.post('/selectWorkerAsDay', (req, res) => {
 });*/
 app.post('/uploadContractform', upload.any(), handleUpload);
 
-app.post('/uploadSign', upload.any(), handleUpload);
+app.post('/uploadStamp', upload.any(), handleUpload);
 https.createServer(options, app).listen(3000);
-/*
-let server = app.listen(app.get('port'), () => {
+
+/*let server = app.listen(app.get('port'), () => {
     var host = server.address().address;
     var port = server.address().port;
     console.log('running at http://' + host + ':' + port)
-})*/
+})*/ 
