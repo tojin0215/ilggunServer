@@ -40,8 +40,8 @@ console.log(JSON.parse(req.body.body).file);
   );
 }
 app.use(express.static('public'));
-app.use(bodyParser.json({limit:50000000}));
-app.use(bodyParser.urlencoded({limit:50000000, extended:true, parameterLimit:500000}));
+app.use(bodyParser.json({limit:50000000000000000000}));
+app.use(bodyParser.urlencoded({limit:50000000000000000000, extended:true, parameterLimit:500000000000000000}));
 app.use(cookieParser());
 app.use(cors({origin: true, credentials: true}));
 // configuration =========================
