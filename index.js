@@ -36,13 +36,12 @@ console.log(JSON.parse(req.body.body).file);
   // File is written, but it's not a readable PDF.
   const tmp = fs.writeFileSync(
     path.join(__dirname, './test.png'),
-    JSON.parse(req.body.body).file, 'base64', (err) => { if(err) throw err }
+    JSON.parse(req.body.body).file, 'base64', (err) => { if(err){ throw err} else {res.send('success')} }
   );
-	res.send('success');
 }
 app.use(express.static('public'));
 app.use(express.json({limit:"50mb"}));
-app.use(express.urlencoded({limit:"50mb", extended:true, parameterLimit:500000000}));
+app.use(express.urlencoded({limit:"50mb", extended:true}));
 app.use(cookieParser());
 app.use(cors({origin: true, credentials: true}));
 // configuration =========================
