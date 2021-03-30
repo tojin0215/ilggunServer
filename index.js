@@ -39,7 +39,8 @@ const handleUpload = (req, res, next) => {
   );
 }
 app.use(express.static('public'));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit:50000000}));
+app.use(bodyParser.urlencoded({limit:50000000, extended:true, parameterLimit:500000}));
 app.use(cookieParser());
 app.use(cors({origin: true, credentials: true}));
 // configuration =========================
