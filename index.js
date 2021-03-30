@@ -19,8 +19,8 @@ key: fs.readFileSync('/opt/bitnami/apache2/conf/www.toojin.cf.key'),
 cert: fs.readFileSync('/opt/bitnami/apache2/conf/www.toojin.cf.crt')
 
 };
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+//app.use(express.json());
+//app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: 'asdf123',
   resave: false,
@@ -38,10 +38,11 @@ console.log(JSON.parse(req.body.body).file);
     path.join(__dirname, './test.png'),
     JSON.parse(req.body.body).file, 'base64', (err) => { if(err) throw err }
   );
+	res.send('success');
 }
 app.use(express.static('public'));
-app.use(bodyParser.json({limit:50000000000000000000}));
-app.use(bodyParser.urlencoded({limit:50000000000000000000, extended:true, parameterLimit:500000000000000000}));
+app.use(bodyParser.json({limit:"50mb"}));
+app.use(bodyParser.urlencoded({limit:"50mb", extended:true, parameterLimit:500000000}));
 app.use(cookieParser());
 app.use(cors({origin: true, credentials: true}));
 // configuration =========================
