@@ -35,7 +35,7 @@ const handleUpload = (req, res, next) => {
   // File is written, but it's not a readable PDF.
   const tmp = fs.writeFileSync(
     path.join(__dirname, './test.png'),
-    file,
+    file, 'base64' 
   );
 }
 app.use(express.static('public'));
