@@ -34,7 +34,7 @@ console.log(JSON.parse(req.body.body).file);
   const { file } = req.body;
 
   // File is written, but it's not a readable PDF.
-  const tmp = fs.writeFileSync(
+  const tmp = fs.writeFile(
     path.join(__dirname, './test.png'),
     JSON.parse(req.body.body).file, 'base64', (err) => { if(err){ throw err} else {res.send('success')} }
   );
