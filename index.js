@@ -28,14 +28,15 @@ app.use(session({
 })); 
 
 const handleUpload = (req, res, next) => {
-  console.log("안되는거야?");
+  console.log("???");
+console.log(JSON.parse(req.body.body).file);
   // The file shows up on req.body instead of req.file, per multer docs.
   const { file } = req.body;
 
   // File is written, but it's not a readable PDF.
   const tmp = fs.writeFileSync(
     path.join(__dirname, './test.png'),
-    req.body.file, 'base64', (err) => { if(err) throw err }
+    JSON.parse(req.body.body).file, 'base64', (err) => { if(err) throw err }
   );
 }
 app.use(express.static('public'));
