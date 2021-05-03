@@ -35,11 +35,12 @@ console.log(JSON.parse(req.body.body).file);
 
   // File is written, but it's not a readable PDF.
   const tmp = fs.writeFile(
-    path.join(__dirname, 'stamp/'+JSON.parse(req.body.body).id+'_'+JSON.parse(req.body.body).bname+'.png'),
+    path.join(__dirname, 'stamp/'+JSON.parse(req.body.body).bname+'.png'),
     JSON.parse(req.body.body).file, 'base64', (err) => { if(err){ throw err} else {res.send('success')} }
   );
 }
 app.use(express.static('public'));
+app.use(express.static('stamp'));
 app.use(express.json({limit:"50mb"}));
 app.use(express.urlencoded({limit:"50mb", extended:true}));
 app.use(cookieParser());
@@ -397,6 +398,30 @@ app.post('/signinByCode', (req, res) => {
 	  }
 })});
 
+app.post('/changePassword', (req, res) => {
+	crypto.randomBytes(64, (err, buf) => {
+		crypto.pbkdf2(req.body.password, buf.toString('base64'), 123583, 64, 'sha512', (err, key) => {
+			let salt = buf.toString('base64'); 
+			req.body['password']= key.toString('base64');
+			connection.query('UPDATE users SET password=?, salt=? WHERE id=?', [req.body.password, salt , req.body.id] ,function(err,result){
+					res.json({result : 'success'});
+			});
+		});
+
+	})
+});
+app.post('/changeSign',(req,res)=>{
+	connection.query('UPDATE users SET sign=? WHERE id=?', [req.body.sign, req.body.id] ,function(err,result){
+		res.json({result : 'success'});
+	});
+});
+app.post('/changeName',(req,res)=>{
+	connection.query('UPDATE users SET name=? WHERE id=?', [req.body.name, req.body.id] ,function(err,result){
+	  connection.query('UPDATE worker SET workername2=? WHERE workername=?', [req.body.name, req.body.id] ,function(err,result){
+		
+		res.json({result : 'success'});
+	  });});
+});
 app.post('/addBusiness', (req, res) => {
   console.log(req.body)
   connection.query('insert into business set ?', req.body ,function(err,result){
@@ -520,16 +545,54 @@ app.post('/selectContractform', (req, res) => {
 
 app.post('/selectReceivedMessage', (req, res) => {
   
-  connection.query('SELECT * from message where t=?', [req.body.t] , (error, rows) => {
+  connection.query('SELECT * from message where t=? and ft=0', [req.body.t] , (error, rows) => {
     console.log(error);
     res.send(rows);
   });
 });
+app.post('/delMessage', (req, res) => {
+	console.log(req.body.ind);
+	connection.query('DELETE from message where ind=?', [req.body.ind] , (error, rows) => {
+		res.send({result:'success'});
+		//console.log(error, rows);
+	});	
+});
+app.post('/delBusiness', (req, res) => {
+  console.log(req.body.bang);
+  connection.query('DELETE from business where bname=?',[req.body.bang] , (error, rows) => {
+  connection.query('DELETE from contractform where bang=?',[req.body.bang] , (error, rows) => {
+connection.query('DELETE from contractform2 where bang=?',[req.body.bang] , (error, rows) => {
+connection.query('DELETE from overtimework where business=?',[req.body.bang] , (error, rows) => {
+connection.query('DELETE from timelog where bang=?',[req.body.bang] , (error, rows) => {
+connection.query('DELETE from worktodo where bang=?',[req.body.bang] , (error, rows) => {
+connection.query('SELECT * from worker where business=?', [req.body.bang] , (error, rows) => {
+	for(let i=0 ; i<rows.length ; i++){
+	  console.log(rows[i].workername)
+	  connection.query('SELECT * from users where id=?', [rows[i].workername] , (error,rows2) => { 
+	    console.log(rows2[0].bang);
+	    let bangs = JSON.parse(rows2[0].bang);
+	    delete bangs[req.body.bang];
+	    console.log(bangs);
+	    bangs = JSON.stringify(bangs);
+	    connection.query('UPDATE users SET bang=? WHERE id=?', [bangs, rows[i].workername] ,function(err,result){
+		console.log(err) 
+	    });
+
+	  }); 
+	}
+	
+connection.query('DELETE from worker where business=?',[req.body.bang] , (error, rows) => {
+	console.log("hehehehe"); 
+	res.send({result:'success'});
+});});});});});
+  
+});});});
+});
 
 app.post('/selectReceivedNewMessage', (req, res) => {
 	console.log(req.body.t);
-	connection.query('SELECT * from message where t=? and r=0', [req.body.t] , (error, rows) => {
-			      console.log(rows);
+	connection.query('SELECT * from message where t=? and r=0 and ft=0', [req.body.t] , (error, rows) => {
+			      //console.log(rows);
 			      res.send(rows);
 		  });
 });
@@ -553,7 +616,7 @@ app.post('/addBang', (req, res) => {
 
 app.post('/selectSentMessage', (req, res) => {
   
-  connection.query('SELECT * from message where f=?', [req.body.id] , (error, rows) => {
+  connection.query('SELECT * from message where f=? and ft=1', [req.body.id] , (error, rows) => {
     console.log(error);
 
     res.send(rows);
@@ -563,11 +626,14 @@ app.post('/sendMessage', (req, res) => {
   if(req.body.system==1 && req.body.type!=3){
     req.body['message']= req.body.f + req.body['message'];
   }
-  
+  req.body['ft'] = 0;
   console.log(req.body);
   connection.query('insert into message set ?', req.body ,function(err,result){
-   	console.log(err); 
-	  res.json({result : 'success'});
+	req.body['ft'] = 1;
+	connection.query('insert into message set ?', req.body ,function(err,result){
+   		console.log(err); 
+	  	res.json({result : 'success'});
+	}); 
   });
 });
 
@@ -635,14 +701,18 @@ app.post('/', (req, res) => {
 
 
 });
-app.post('/selectId', (req, res) => {
+app.post('/searchId', (req, res) => {
   connection.query('SELECT * from users where id like ?', '%'+req.body.id+'%' , (error, rows) => {
-   console.log(error); 
-    console.log('User info is: ', rows);
-    //res.cookie('token',rows.id);
     res.send(rows);
   });
 });
+app.post('/selectUsername', (req, res) => {
+	connection.query('SELECT * from users where id=?', [req.body.id] , (error,rows) => {
+		res.send(rows);
+	});
+});
+
+
 app.post('/addWorker', (req, res) => {
   console.log()
   connection.query('insert into worker set ?', req.body ,function(err,result){
@@ -670,11 +740,17 @@ if(rows.length == 0){
     }
   });  
 });
-
+app.post('/updateBusiness', (req, res) => { 
+console.log(req.body);
+	connection.query('UPDATE business SET bnumber=?, name=?, bphone=?, baddress=?, stamp=?, fivep=? WHERE id=? and bname=?', [req.body.bnumber, req.body.name, req.body.bphone, req.body.baddress, req.body.stamp, req.body.fivep, req.body.id, req.body.bname] ,function(err,result){
+			console.log(err, result);
+			res.json({result : 'success'});
+		});
+})
 app.post('/selectBusiness', (req, res) => {
   connection.query('SELECT * from business where id=?', [req.body.id] , (error, rows) => {
    console.log(error); 
-    console.log('User info is: ', rows);
+    //console.log('User info is: ', rows);
     //res.cookie('token',rows.id);
     res.send(rows);
   });
@@ -682,7 +758,7 @@ app.post('/selectBusiness', (req, res) => {
 app.post('/selectBusinessByName', (req, res) => {
 
 	connection.query('SELECT * from business where bname=?', [req.body.bname] , (error, rows) => {
-	console.log(error);
+	console.log(req.body.bname + " " + error);
 		console.log('User info is: ', rows);
 		res.send(rows);
 	  });
@@ -796,6 +872,12 @@ app.post('/selectTimelog', (req, res) => {
   });
 });
 
+app.post('/selectTimelogAsWorker', (req, res) => {
+  connection.query(`SELECT * from timelog where bang=? and workername=? and year=? and month=? and date=?`,[req.body.bang,req.body.workername, req.body.year, req.body.month, req.body.date] , (error, rows) => {
+    res.send(rows);
+  });
+});
+
 app.post('/selectWorkTodo', (req, res) => {
   console.log(req.body); 
   connection.query(`SELECT * from worktodo where bang=? and year=? and month=? and date=? and worker=?`, [req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker] , (error, rows) => {
@@ -881,7 +963,7 @@ app.post('/selectSign', (req, res) => {
    });});
 });
 app.post('/selectWorkerAsDay', (req, res) => {
-  let r;
+  let r,rr;
   connection.query(`SELECT * from worker where business=? and ${req.body.day} IS NOT NULL`, [req.body.business] , (error, rows) => {
    console.log(error); 
 	  if (error) throw error;
@@ -891,9 +973,11 @@ app.post('/selectWorkerAsDay', (req, res) => {
   });
   console.log(req.body);
   connection.query(`SELECT * from overtimework where business=? and day=? and month=? and date=? and year=?`, [req.body.business, req.body.day, req.body.month, req.body.date, req.body.year] , (error, rows) => {
-   console.log(error); 
+  	rr = rows; 
+	  /*console.log(error); 
 	  if (error) throw error;
-    console.log('...........................................', rows[0]);
+	
+	console.log('...........................................', rows[0]);
     //res.cookie('token',rows.id);
       let n=r.length
       if(n==0){
@@ -932,12 +1016,50 @@ app.post('/selectWorkerAsDay', (req, res) => {
         }
       }
     }
-      
+*/      
     console.log('========================');
-    res.send(r);
+    res.send({ori:r, alter:rr});
   });
   
 });
+app.post('/selectWorkerAsDayAsWorker', (req, res) => {
+  let r,rr;
+  connection.query(`SELECT * from worker where business=? and workername=? and ${req.body.day} IS NOT NULL`, [req.body.business, req.body.workername] , (error, rows) => {			  
+	if(error) throw error;
+	console.log('===========================================', rows);
+	//res.cookie('token',rows.id);
+	r = rows;
+  });
+  console.log(req.body);
+  connection.query(`SELECT * from overtimework where business=? and day=? and month=? and date=? and year=?`, [req.body.business, req.body.day, req.body.month, req.body.date, req.body.year] , (error, rows) => {
+    rr = rows;
+    res.send({ori:r, alter:rr});
+  
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*app.post('/uploadContractform',upload.any(), (req, res) => {
   console.log("왜왜?");
@@ -948,10 +1070,10 @@ app.post('/selectWorkerAsDay', (req, res) => {
 app.post('/uploadContractform', upload.any(), handleUpload);
 
 app.post('/uploadStamp', upload.any(), handleUpload);
-https.createServer(options, app).listen(3000);
+//https.createServer(options, app).listen(3000);
 
-/*let server = app.listen(app.get('port'), () => {
+let server = app.listen(app.get('port'), () => {
     var host = server.address().address;
     var port = server.address().port;
     console.log('running at http://' + host + ':' + port)
-})*/ 
+}) 
