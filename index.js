@@ -773,6 +773,15 @@ app.post('/selectWorkerByType', (req, res) => {
   });
 });
 
+app.post('/insurancePercentage', (req, res) => {
+
+	connection.query('SELECT * from insurancePercentage', (error, rows) => {
+	//console.log(req.body.bname + " " + error);
+		console.log('User info is: ', rows);
+		res.send(rows);
+	  });
+});
+
 app.post('/selectWorker', (req, res) => {
   connection.query('SELECT * from worker where state=2 and business=?', [req.body.business] , (error, rows) => {
    console.log(error); 
