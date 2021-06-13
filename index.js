@@ -414,6 +414,13 @@ app.post('/changeSign',(req,res)=>{
 	connection.query('UPDATE users SET sign=? WHERE id=?', [req.body.sign, req.body.id] ,function(err,result){
 		res.json({result : 'success'});
 	});
+
+  app.post('/changeApple',(req,res)=>{
+    connection.query('UPDATE users SET sign=?, id=? WHERE a_id=?', [req.body.sign,req.body.email, req.body.a_id] ,function(err,result){
+      res.json({result : 'success'});
+    });
+  });
+
 });
 app.post('/changeName',(req,res)=>{
 	connection.query('UPDATE users SET name=? WHERE id=?', [req.body.name, req.body.id] ,function(err,result){
@@ -771,6 +778,15 @@ app.post('/selectWorkerByType', (req, res) => {
     //res.cookie('token',rows.id);
     res.send(rows);
   });
+});
+
+app.post('/otherAllowance', (req, res) => {
+
+	connection.query('SELECT * from otherAllowance where id=?', [req.body.id] , (error, rows) => {
+	console.log(req.body.id + " " + error);
+		console.log('otherAllowance is: ', rows);
+		res.send(rows);
+	  });
 });
 
 app.post('/insurancePercentage', (req, res) => {
