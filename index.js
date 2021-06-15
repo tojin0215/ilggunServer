@@ -782,7 +782,7 @@ app.post('/selectWorkerByType', (req, res) => {
 
 app.post('/otherAllowance', (req, res) => {
 
-	connection.query('SELECT * from otherAllowance where id=?', [req.body.id] , (error, rows) => {
+	connection.query('SELECT * from otherAllowance where id=? and year=? and month=?', [req.body.id, req.body.year, req.body.month] , (error, rows) => {
 	console.log(req.body.id + " " + error);
 		console.log('otherAllowance is: ', rows);
 		res.send(rows);
