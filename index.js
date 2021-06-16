@@ -801,7 +801,7 @@ app.post('/otherAllowance', (req, res) => {
 
 app.post('/insurancePercentage', (req, res) => {
 
-	connection.query('SELECT * from insurancePercentage where bang?', [req.body.bang], (error, rows) => {
+	connection.query('SELECT * from insurancePercentage where bang=?', [req.body.bang], (error, rows) => {
 	console.log(req.body.bang + " " + error);
 		console.log('User info is: ', rows);
 		res.send(rows);
