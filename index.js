@@ -854,28 +854,29 @@ app.post('/deleteWorker', (req, res) => {
 		
 	});
 	
-	connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
-	if(rows[0].type==2){
-		connection.query('DELETE from contractform where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
-		)}else{
-		connection.query('DELETE from contractform2 where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
-		)}
-	});
+  // 근로자 삭제해도 정보는 삭제안되게.
+	// connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
+	// if(rows[0].type==2){
+	// 	connection.query('DELETE from contractform where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
+	// 	)}else{
+	// 	connection.query('DELETE from contractform2 where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
+	// 	)}
+	// });
 	
-	connection.query('DELETE from worker where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
-		connection.query('DELETE from overtimework where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
-		console.log("error : "+error); 
-		});
-	});
+	// connection.query('DELETE from worker where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
+	// 	connection.query('DELETE from overtimework where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
+	// 	console.log("error : "+error); 
+	// 	});
+	// });
 
-	connection.query('DELETE from timelog where bang=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
-		console.log("error : "+error);
-	});
+	// connection.query('DELETE from timelog where bang=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
+	// 	console.log("error : "+error);
+	// });
 	
-	connection.query('DELETE from worktodo where bang=? and worker=?', [req.body.business, req.body.workername] , (error, rows) => {
-			console.log("error : "+error);
-			res.send(rows);
-	});
+	// connection.query('DELETE from worktodo where bang=? and worker=?', [req.body.business, req.body.workername] , (error, rows) => {
+	// 		console.log("error : "+error);
+	// 		res.send(rows);
+	// });
 
 });
 
