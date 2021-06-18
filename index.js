@@ -727,6 +727,7 @@ app.post('/addWorker', (req, res) => {
     res.json({result : 'success'});
   });
 });
+
 app.post('/addWork', (req, res) => {
   console.log(req.body)
   console.log("dd")
@@ -854,6 +855,13 @@ app.post('/deleteWorker', (req, res) => {
 		
 	});
 	
+  connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
+    connection.query('UPDATE worker SET workState=?', [1] ,function(err,result){
+      console.log(err)
+      res.json({result : 'success'});
+    });
+  }
+
   // 근로자 삭제해도 정보는 삭제안되게.
 	// connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
 	// if(rows[0].type==2){
