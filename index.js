@@ -852,15 +852,14 @@ app.post('/deleteWorker', (req, res) => {
 		connection.query('UPDATE users SET bang=? WHERE id=?', [bangs, req.body.workername] ,function(err,result){
 			console.log(err)
 		});
-		
-	});
+  });
 	
   connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
     connection.query('UPDATE worker SET workState=?', [1] ,function(err,result){
       console.log(err)
       res.json({result : 'success'});
     });
-  }
+  });
 
   // 근로자 삭제해도 정보는 삭제안되게.
 	// connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
