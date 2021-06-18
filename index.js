@@ -855,7 +855,7 @@ app.post('/deleteWorker', (req, res) => {
   });
 	
   connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
-    connection.query('UPDATE worker SET workState=?', [1] ,function(err,result){
+    connection.query('UPDATE worker SET workState=? WHERE business=? and workername=?', [1,req.body.business, req.body.workername] ,function(err,result){
       console.log(err)
       res.json({result : 'success'});
     });
