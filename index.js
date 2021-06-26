@@ -414,14 +414,14 @@ app.post('/changeSign',(req,res)=>{
 	connection.query('UPDATE users SET sign=? WHERE id=?', [req.body.sign, req.body.id] ,function(err,result){
 		res.json({result : 'success'});
 	});
-
-  app.post('/changeApple',(req,res)=>{
-    connection.query('UPDATE users SET sign=?, id=? WHERE a_id=?', [req.body.sign,req.body.email, req.body.a_id] ,function(err,result){
-      res.json({result : 'success'});
-    });
-  });
-
 });
+
+app.post('/changeApple',(req,res)=>{
+  connection.query('UPDATE users SET sign=?, id=? WHERE a_id=?', [req.body.sign,req.body.email, req.body.a_id] ,function(err,result){
+    res.json({result : 'success'});
+  });
+});
+
 app.post('/changeName',(req,res)=>{
 	connection.query('UPDATE users SET name=? WHERE id=?', [req.body.name, req.body.id] ,function(err,result){
 	  connection.query('UPDATE worker SET workername2=? WHERE workername=?', [req.body.name, req.body.id] ,function(err,result){
