@@ -417,7 +417,7 @@ app.post('/changeSign',(req,res)=>{
 });
 
 app.post('/changeApple',(req,res)=>{
-  connection.query('UPDATE users SET sign=?, email=? WHERE a_id=?', [req.body.sign, req.body.email, req.body.a_id] ,function(err,result){
+  connection.query('UPDATE users SET sign=?, email=? WHERE id=?', [req.body.sign, req.body.email, req.body.id] ,function(err,result){
     res.json({result : 'success'});
   });
 });
