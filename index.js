@@ -542,7 +542,7 @@ app.post('/selectContractform', (req, res) => {
     res.send(rows);
   });
 });
-
+otherAllowance
 app.post('/selectReceivedMessage', (req, res) => {
   
   connection.query('SELECT * from message where t=? and ft=0', [req.body.t] , (error, rows) => {
@@ -1047,6 +1047,12 @@ app.post('/selectWorkerAsDayAsWorker', (req, res) => {
   });
 });
 
+app.post('/otherAllowance', (req, res) => {
+  connection.query('SELECT * from message otherAllowance bang=? and id=? and year=? and month=?', [req.body.bang, req.body.id, req.body.year, req.body.month] , (error, rows) => {
+    console.log(error);
+    res.send(rows);
+  });
+});
 
 
 
