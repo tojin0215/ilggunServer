@@ -417,7 +417,7 @@ app.post('/changeSign',(req,res)=>{
 });
 
 app.post('/changeApple',(req,res)=>{
-  connection.query('UPDATE users SET sign=?, email=? WHERE id=?', [req.body.sign, req.body.email, req.body.id] ,function(err,result){
+  connection.query('UPDATE users SET sign=?, email=?, name=? WHERE id=?', [req.body.sign, req.body.email, req.body.name, req.body.id] ,function(err,result){
     res.json({result : 'success'});
   });
 });
@@ -825,7 +825,7 @@ app.post('/selectWorkerEach', (req, res) => {
   else{
     workername = req.session.name;
   }
-  connection.query('SELECT * from worker where business=? and workername=?', [req.body.business,workername] , (error, rows) => {
+  connection.query('SELECT * from worker where business=? and workername2=?', [req.body.business,workername] , (error, rows) => {
    console.log(error); 
     console.log('worker info is: ', rows);
     //res.cookie('token',rows.id);
