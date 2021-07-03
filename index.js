@@ -709,7 +709,7 @@ app.post('/', (req, res) => {
 
 });
 app.post('/searchId', (req, res) => {
-  connection.query('SELECT * from users where id like ?', '%'+req.body.id+'%' , (error, rows) => {
+  connection.query('SELECT * from users where name like ?', '%'+req.body.name+'%' , (error, rows) => {
     res.send(rows);
   });
 });
