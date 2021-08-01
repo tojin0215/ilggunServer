@@ -4,12 +4,26 @@ const mysql      = require('mysql');
 const dbconfig   = require('./db/database.js');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const fs = require('fs');
+
 const multer      = require('multer');
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const business_id = req.body.business_id
+    const path = (business_id) ? `uploads/${business_id}/` : 'uploads/default/'
+    console.log(req.body);
+    fs.mkdirSync(path, { recursive: true })
+    cb(null, path) // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname) // cb 콜백함수를 통해 전송된 파일 이름 설정
+  }
+})
+const upload = multer({ storage: storage })
+
 const cors = require("cors");
 const https = require('https');
-const fs = require('fs');
 const path = require('path');
-const upload = multer({});
 const crypto = require('crypto');
 const connection = mysql.createConnection(dbconfig);
 const app = express();
@@ -29,7 +43,7 @@ app.use(session({
 
 const handleUpload = (req, res, next) => {
   console.log("???");
-console.log(JSON.parse(req.body.body).file);
+  console.log(JSON.parse(req.body.body).file);
   // The file shows up on req.body instead of req.file, per multer docs.
   const { file } = req.body;
 
@@ -49,6 +63,18 @@ app.use(cors({origin: true, credentials: true}));
 app.set('port', process.env.PORT || 3000);
 
 app.get('/', (req, res) => {
+//   res.send(`
+//   <!DOCTYPE html>
+// <html>
+// <body>
+//     <form action="upload" method="POST" enctype="multipart/form-data">
+//         <input type=file name=userfile />
+//         <input type=text name=business_id value=test />
+//         <input type="submit" />
+//     </form>
+// </body>
+// </html>
+//   `)
   res.send('Root');
 });
 
@@ -61,7 +87,10 @@ app.get('/privacy', (req, res) => {
   }
 });
 
-
+app.post('/upload', upload.single('userfile'), (req, res) => {
+  res.json(req.file);
+});
+app.use('/download', express.static('uploads'));
 
 
 
