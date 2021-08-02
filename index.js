@@ -11,7 +11,6 @@ var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const business_id = req.body.business_id
     const path = (business_id) ? `uploads/${business_id}/` : 'uploads/default/'
-    console.log(req.body);
     fs.mkdirSync(path, { recursive: true })
     cb(null, path) // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
   },
@@ -63,19 +62,19 @@ app.use(cors({origin: true, credentials: true}));
 app.set('port', process.env.PORT || 3000);
 
 app.get('/', (req, res) => {
-//   res.send(`
-//   <!DOCTYPE html>
-// <html>
-// <body>
-//     <form action="upload" method="POST" enctype="multipart/form-data">
-//         <input type=file name=userfile />
-//         <input type=text name=business_id value=test />
-//         <input type="submit" />
-//     </form>
-// </body>
-// </html>
-//   `)
-  res.send('Root');
+  res.send(`
+  <!DOCTYPE html>
+<html>
+<body>
+    <form action="upload" method="POST" enctype="multipart/form-data">
+        <input type=file name=userfile />
+        <input type=text name="business_id" value="test" />
+        <input type="submit" />
+    </form>
+</body>
+</html>
+  `)
+  // res.send('Root');
 });
 
 
@@ -88,9 +87,15 @@ app.get('/privacy', (req, res) => {
 });
 
 app.post('/upload', upload.single('userfile'), (req, res) => {
+  console.log(req.file);
   res.json(req.file);
 });
 app.use('/download', express.static('uploads'));
+
+app.use('/log/download', (req, res) => {
+  console.log(fs.readdirSync(`uploads/${req.body.business_id}/`))
+  res.json({file: fs.readdirSync(`uploads/${req.body.business_id}/`)});
+});
 
 
 
