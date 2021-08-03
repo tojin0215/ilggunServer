@@ -639,6 +639,12 @@ app.post('/selectBusinessByWorker', (req, res) => {
     res.send(rows);
   });
 });
+app.post('/deletedWorker', (req, res) => {
+  connection.query('SELECT * from retireWorker where business_id=?', [req.body.business_id] , (error, rows) => {
+    console.log('deletedWorker info is: ', rows);
+    res.send(rows);
+  });
+})
 app.post('/deleteWorker', (req, res) => {
 	connection.query('SELECT * from users where id=?', [req.body.workername] , (error, rows) => {
 
