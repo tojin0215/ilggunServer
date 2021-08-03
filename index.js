@@ -565,6 +565,21 @@ app.post('/otherAllowance', (req, res) => {
 	  });
 });
 
+app.post('/AditionalAllowance', (req, res) => {
+
+	connection.query('SELECT id, taxation, taxFree from otherAllowance where id=? and year=? and month=? and day=? order by day asc', [req.body.id, req.body.year, req.body.month, req.body.day] , (error, rows) => {
+	console.log(req.body.id + " " + error);
+		console.log('AditionalAllowance is: ', rows);
+		res.send(rows);
+	  });
+});
+
+
+
+
+
+
+
 app.post('/insurancePercentage', (req, res) => {
 
 	connection.query('SELECT * from insurancePercentage where bang=?', [req.body.bang], (error, rows) => {
