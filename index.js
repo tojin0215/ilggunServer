@@ -10,7 +10,7 @@ const multer      = require('multer');
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const business_id = req.body.business_id
-    const path = (business_id) ? `uploads/${business_id}/` : 'uploads/default/'
+    const path = (business_id) ? `uploads/${business_id}/` : 'uploads/undefined/'
     fs.mkdirSync(path, { recursive: true })
     cb(null, path) // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
   },
@@ -92,9 +92,21 @@ app.post('/upload', upload.single('userfile'), (req, res) => {
 });
 app.use('/download', express.static('uploads'));
 
-app.use('/log/download', (req, res) => {
+app.post('/log/download', (req, res) => {
   console.log(fs.readdirSync(`uploads/${req.body.business_id}/`))
+  fs.mkdirSync(`uploads/${req.body.business_id}/`, { recursive: true })
   res.json({file: fs.readdirSync(`uploads/${req.body.business_id}/`)});
+});
+app.post('/delete', (req, res) => {
+  const path = `uploads/${req.body.business_id}/${req.body.file}`
+  try {
+    fs.unlinkSync(path)
+    console.log(fs.readdirSync(`uploads/${req.body.business_id}/`))
+    res.json({file: fs.readdirSync(`uploads/${req.body.business_id}/`)});
+    //file removed
+  } catch(err) {
+    console.error(err)
+  }
 });
 
 
@@ -638,6 +650,20 @@ app.post('/deleteWorker', (req, res) => {
 			console.log(err)
 		});
   });
+
+  let sql = `INSERT INTO retireWorker (business_id, user_id, year, month, day, reason) VALUES (?, ?, ?, ?, ?, ?)`
+  const business_id = (req.body.business_id) ? req.body.business_id : req.body.business;
+  const user_id = (req.body.user_id) ? req.body.user_id : req.body.workername;
+  const year = (req.body.year) ? req.body.year : new Date().getFullYear();
+  const month = (req.body.month) ? req.body.month : new Date().getMonth() + 1;
+  const date = (req.body.date) ? req.body.date : new Date().getDate();
+  const reason = (req.body.reason) ? req.body.reason : '';
+
+  connection.query(
+    sql,
+    [business_id, user_id, year, month, date, reason],
+    (error, rows) => {
+  });
 	
   connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
     connection.query('UPDATE worker SET workState=? WHERE business=? and workername=?', [1,req.body.business, req.body.workername] ,function(err,result){
@@ -645,6 +671,7 @@ app.post('/deleteWorker', (req, res) => {
       res.json({result : 'success'});
     });
   });
+
 
   // 근로자 삭제해도 정보는 삭제안되게.
 	// connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
