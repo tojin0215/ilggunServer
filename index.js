@@ -577,11 +577,11 @@ app.post('/otherAllowance', (req, res) => {
 	  });
 });
 
-app.post('/AditionalAllowance', (req, res) => {
+app.post('/AdditionalAllowance', (req, res) => {
 
-	connection.query('SELECT id, taxation, taxFree from otherAllowance where id=? and year=? and month=? and day=? order by day asc', [req.body.id, req.body.year, req.body.month, req.body.day] , (error, rows) => {
+	connection.query('SELECT * from otherAllowance where bang=? and year=? and month=? and day=? order by day asc', [req.body.bang, req.body.year, req.body.month, req.body.day] , (error, rows) => {
 	console.log(req.body.id + " " + error);
-		console.log('AditionalAllowance is: ', rows);
+		console.log('AdditionalAllowance is: ', rows);
 		res.send(rows);
 	  });
 });
