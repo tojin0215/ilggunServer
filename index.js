@@ -579,7 +579,7 @@ app.post('/otherAllowance', (req, res) => {
 
 app.post('/AdditionalAllowance', (req, res) => {
 
-	connection.query('SELECT * from otherAllowance where bang=? and year=? and month=? and day=? order by day asc', [req.body.bang, req.body.year, req.body.month, req.body.day] , (error, rows) => {
+	connection.query('SELECT * from otherAllowance where bang=?', [req.body.bang] , (error, rows) => {
 	console.log(req.body.id + " " + error);
 		console.log('AdditionalAllowance is: ', rows);
 		res.send(rows);
