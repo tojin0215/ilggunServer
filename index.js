@@ -657,7 +657,7 @@ app.post('/deleteWorker', (req, res) => {
 		});
   });
 
-  let sql = `INSERT INTO retireWorker (business_id, user_id, year, month, day, reason) VALUES (?, ?, ?, ?, ?, ?)`
+  let sql = `INSERT INTO retireWorker (business_id, user_id, year, month, date, reason) VALUES (?, ?, ?, ?, ?, ?)`
   const business_id = (req.body.business_id) ? req.body.business_id : req.body.business;
   const user_id = (req.body.user_id) ? req.body.user_id : req.body.workername;
   const year = (req.body.year) ? req.body.year : new Date().getFullYear();
@@ -672,7 +672,7 @@ app.post('/deleteWorker', (req, res) => {
   });
 	
   connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
-    connection.query('UPDATE worker SET workState=? WHERE business=? and workername=?', [1,req.body.business, req.body.workername] ,function(err,result){
+    connection.query('UPDATE worker SET workState=? WHERE business=? and workername=?', [1, req.body.business, req.body.workername] ,function(err,result){
       console.log(err)
       res.json({result : 'success'});
     });
