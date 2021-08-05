@@ -16,7 +16,6 @@ db.ContractForm2 = require('./contractform2')(sequelize, Sequelize); //회원 �
 db.InsurancePercentage = require('./insurancePercentage')(sequelize, Sequelize); //운동
 db.Message = require('./message')(sequelize, Sequelize); //운동 배정
 db.OtherAllowance = require('./otherAllowance')(sequelize, Sequelize); //운동 링크
-db.AdditionalAllowance = require('./AdditionalAllowance')(sequelize, Sequelize); //운동 링크
 db.OvertimeWork = require('./overtimeWork')(sequelize, Sequelize); //운동 묶음
 db.TimeLog = require('./timelog')(sequelize, Sequelize); //매출
 
