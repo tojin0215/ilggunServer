@@ -560,8 +560,8 @@ app.post('/selectWorkerByType', (req, res) => {
 
 app.post('/otherAllowanceAll', (req, res) => {
 
-	connection.query('SELECT * from otherAllowance year=? and month=?', [req.body.year, req.body.month] , (error, rows) => {
-	//console.log(req.body.id + " " + error);
+	connection.query('SELECT * from otherAllowance bang=? and year=? and month=?', [req.body.year, req.body.month] , (error, rows) => {
+	  console.log(req.body.id + " " + error);
 		console.log('otherAllowanceAll is: ', rows);
 		res.send(rows);
 	  });
