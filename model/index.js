@@ -18,7 +18,7 @@ db.Message = require('./message')(sequelize, Sequelize); //운동 배정
 db.OtherAllowance = require('./otherAllowance')(sequelize, Sequelize); //운동 링크
 db.OvertimeWork = require('./overtimeWork')(sequelize, Sequelize); //운동 묶음
 db.TimeLog = require('./timelog')(sequelize, Sequelize); //매출
-
+db.TimeLog = require('./vacation')(sequelize, Sequelize); //신규휴가
 
 
 

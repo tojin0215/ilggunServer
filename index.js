@@ -911,7 +911,16 @@ app.post('/otherAllowance', (req, res) => {
 
 
 
+// vacation
 
+app.post('/selectVacation', (req, res) => {
+
+	connection.query('SELECT * from vacation where bang=?', [req.body.bang] , (error, rows) => {
+	console.log(req.body.id + " " + error);
+		console.log('selectVacation is: ', rows);
+		res.send(rows);
+	  });
+});
 
 
 
