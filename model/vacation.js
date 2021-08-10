@@ -1,6 +1,5 @@
 export default (sequelize, DataTypes) => {
-    return sequelize.define('vacation', {
-        num :{ type: DataTypes.INTEGER, primaryKey:true},
+    return sequelize.define('vacation', {       
         bang : {type:DataTypes.STRING(50)},
         workername : {type:DataTypes.STRING(50)},
         vacation:{type:DataTypes.INTEGER},

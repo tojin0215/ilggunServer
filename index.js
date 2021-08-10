@@ -922,7 +922,25 @@ app.post('/selectVacation', (req, res) => {
 	  });
 });
 
+app.post('/insertVacation', (req, res) => {
+  connection.query('insert into vacation set ?', 
+  {bang:req.body.bang, workername:req.body.workername, vacation:req.body.vacation, reason:req.body.reason, start_date:req.body.start_date, end_date:req.body.end_date,},	 
+  (error, rows) => {
+	console.log(req.body.id + " " + error);
+		console.log('insertVacation is: ', rows);
+		res.send(rows);
+	  });
+});
 
+
+app.post('/dateVaction', (req, res) => {
+
+	connection.query('SELECT * from vacation where bang=? and start_date=?', [req.body.bang, req.body.start_date] , (error, rows) => {
+	console.log(req.body.id + " " + error);
+		console.log('dateVaction is: ', rows);
+		res.send(rows);
+	  });
+});
 
 
 
