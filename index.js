@@ -333,6 +333,7 @@ app.post('/selectReceivedMessage', (req, res) => {
     res.send(rows);
   });
 });
+
 app.post('/delMessage', (req, res) => {
 	console.log(req.body.ind);
 	connection.query('DELETE from message where ind=?', [req.body.ind] , (error, rows) => {
@@ -558,6 +559,8 @@ app.post('/selectWorkerByType', (req, res) => {
 });
 
 
+//Allowance
+
 app.post('/otherAllowanceAll', (req, res) => {
 
 	connection.query('SELECT * from otherAllowance bang=? and year=? and month=?', [req.body.bang, req.body.year, req.body.month] , (error, rows) => {
@@ -586,6 +589,15 @@ app.post('/AdditionalAllowance', (req, res) => {
 	  });
 });
 
+app.post('/insertAllowance', (req, res) => {
+  connection.query('insert into otherAllowance set ?', 
+  {},	 
+  (error, rows) => {
+	console.log(req.body.id + " " + error);
+		console.log('insertAllowance is: ', rows);
+		res.send(rows);
+	  });
+});
 
 
 
@@ -924,7 +936,7 @@ app.post('/selectVacation', (req, res) => {
 
 app.post('/insertVacation', (req, res) => {
   connection.query('insert into vacation set ?', 
-  {bang:req.body.bang, workername:req.body.workername, vacation:req.body.vacation, reason:req.body.reason, start_date:req.body.start_date, end_date:req.body.end_date,},	 
+  {bang:req.body.bang, workername:req.body.workername, vacation:req.body.vacation, reason:req.body.reason, start_date:req.body.start_date, end_date:req.body.end_date},	 
   (error, rows) => {
 	console.log(req.body.id + " " + error);
 		console.log('insertVacation is: ', rows);
