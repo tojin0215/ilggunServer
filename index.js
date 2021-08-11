@@ -279,6 +279,21 @@ app.post('/selectContractform2', (req, res) => {
 		    });
 
 });
+
+app.post('/selectContractformAll', (req, res) => {
+
+	connection.query('SELECT * from contractform where bang=?', [req.body.bang] , (error, rows) => {
+	console.log(req.body.id + " " + error);
+		console.log('selectContractformAll is: ', rows);
+		res.send(rows);
+	  });
+});
+
+
+
+
+
+
 app.post('/alterState', (req, res) => {
   console.log(req.body)
   if(req.body.id == '/'){
@@ -602,7 +617,7 @@ app.post('/insertAllowance', (req, res) => {
 
 
 
-
+//insurancePercentage
 
 app.post('/insurancePercentage', (req, res) => {
 
@@ -614,6 +629,14 @@ app.post('/insurancePercentage', (req, res) => {
 //	connection.query('SELECT * from insurancePercentage', (error, rows) => {
 	//console.log(req.body.bname + " " + error);
 		console.log('User info is: ', rows);
+		res.send(rows);
+	  });
+});
+
+app.post('/insurancePercentageYear', (req, res) => {
+
+	connection.query('SELECT * from insurancePercentage where bang=? and date=? ', [req.body.bang, req.body.year], (error, rows) => {
+		console.log('insurancePercentageYear: ', rows);
 		res.send(rows);
 	  });
 });
