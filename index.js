@@ -635,7 +635,7 @@ app.post('/insurancePercentage', (req, res) => {
 
 app.post('/insurancePercentageYear', (req, res) => {
 
-	connection.query('SELECT * from insurancePercentage where bang=? and date=? ', [req.body.bang, req.body.year], (error, rows) => {
+	connection.query('SELECT * from insurancePercentage where bang=? and date=? ', [req.body.bang, req.body.date], (error, rows) => {
 		console.log('insurancePercentageYear: ', rows);
 		res.send(rows);
 	  });
