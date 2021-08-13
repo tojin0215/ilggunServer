@@ -422,18 +422,39 @@ app.post('/selectSentMessage', (req, res) => {
   });
 });
 app.post('/sendMessage', (req, res) => {
+  // console.log(req);
   if(req.body.system==1 && req.body.type!=3){
     req.body['message']= req.body.f + req.body['message'];
   }
+
+  connection.query('select * from users where id = ?', [req.body.f], function(err, f_result) {
+
+  // console.log(f_result);
+  req.body.f_name = f_result[0].name;
+  connection.query('select * from users where id = ?', [req.body.t], function(err, t_result) {
+    req.body.t_name = t_result[0].name;
+
   req.body['ft'] = 0;
-  console.log(req.body);
+  // console.log(req.body);
   connection.query('insert into message set ?', req.body ,function(err,result){
 	req.body['ft'] = 1;
 	connection.query('insert into message set ?', req.body ,function(err,result){
-   		console.log(err); 
+   		// console.log(err); 
 	  	res.json({result : 'success'});
 	}); 
   });
+  })
+  })
+  
+  // req.body['ft'] = 0;
+  // console.log(req.body);
+  // connection.query('insert into message set ?', req.body ,function(err,result){
+	// req.body['ft'] = 1;
+	// connection.query('insert into message set ?', req.body ,function(err,result){
+  //  		console.log(err); 
+	//   	res.json({result : 'success'});
+	// }); 
+  // });
 });
 
 app.post('/alterReadMessage', (req, res) => {
