@@ -639,27 +639,18 @@ app.post('/insertAllowance', (req, res) => {
 
 
 //insurancePercentage
-
 app.post('/insurancePercentage', (req, res) => {
-
-	connection.query('SELECT * from insurancePercentage where bang=?', [req.body.bang], (error, rows) => {
-	console.log(req.body.bang + " " + error);
-
-//app.post('/insurancePercentage', (req, res) => {
-
-//	connection.query('SELECT * from insurancePercentage', (error, rows) => {
-	//console.log(req.body.bname + " " + error);
-		console.log('User info is: ', rows);
+  const business_id = req.body.bang;
+	connection.query('SELECT * from insurancePercentage ORDER BY date desc', [], (error, rows) => {
 		res.send(rows);
-	  });
+	});
 });
 
 app.post('/insurancePercentageYear', (req, res) => {
-
-	connection.query('SELECT * from insurancePercentage where bang=? and date=? ', [req.body.bang, req.body.date], (error, rows) => {
-		console.log('insurancePercentageYear: ', rows);
+  const business_id = req.body.bang;
+	connection.query('SELECT * from insurancePercentage where date=? ', [req.body.date], (error, rows) => {
 		res.send(rows);
-	  });
+  });
 });
 
 app.post('/selectWorker', (req, res) => {
