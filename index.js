@@ -1,12 +1,12 @@
-const express    = require('express');
-const session    = require('express-session');
-const mysql      = require('mysql');
-const dbconfig   = require('./db/database.js');
+const express = require('express');
+const session = require('express-session');
+const mysql = require('mysql');
+const dbconfig = require('./db/database.js');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
 
-const multer      = require('multer');
+const multer = require('multer');
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const business_id = req.body.business_id
@@ -38,7 +38,7 @@ app.use(session({
   secret: 'asdf123',
   resave: false,
   saveUninitialized: true,
-})); 
+}));
 
 const handleUpload = (req, res, next) => {
   console.log("???");
@@ -48,16 +48,16 @@ const handleUpload = (req, res, next) => {
 
   // File is written, but it's not a readable PDF.
   const tmp = fs.writeFile(
-    path.join(__dirname, 'stamp/'+JSON.parse(req.body.body).bname+'.png'),
-    JSON.parse(req.body.body).file, 'base64', (err) => { if(err){ throw err} else {res.send('success')} }
+    path.join(__dirname, 'stamp/' + JSON.parse(req.body.body).bname + '.png'),
+    JSON.parse(req.body.body).file, 'base64', (err) => { if (err) { throw err } else { res.send('success') } }
   );
 }
 app.use(express.static('public'));
 app.use(express.static('stamp'));
-app.use(express.json({limit:"50mb"}));
-app.use(express.urlencoded({limit:"50mb", extended:true}));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
-app.use(cors({origin: true, credentials: true}));
+app.use(cors({ origin: true, credentials: true }));
 // configuration =========================
 app.set('port', process.env.PORT || 3000);
 
@@ -81,7 +81,7 @@ app.get('/', (req, res) => {
 app.get('/privacy', (req, res) => {
   try {
     res.send(fs.readFileSync('./privacy.txt', 'utf8'))
-  } catch(e) {
+  } catch (e) {
     console.error(e)
   }
 });
@@ -95,16 +95,16 @@ app.use('/download', express.static('uploads'));
 app.post('/log/download', (req, res) => {
   console.log(fs.readdirSync(`uploads/${req.body.business_id}/`))
   fs.mkdirSync(`uploads/${req.body.business_id}/`, { recursive: true })
-  res.json({file: fs.readdirSync(`uploads/${req.body.business_id}/`)});
+  res.json({ file: fs.readdirSync(`uploads/${req.body.business_id}/`) });
 });
 app.post('/delete', (req, res) => {
   const path = `uploads/${req.body.business_id}/${req.body.file}`
   try {
     fs.unlinkSync(path)
     console.log(fs.readdirSync(`uploads/${req.body.business_id}/`))
-    res.json({file: fs.readdirSync(`uploads/${req.body.business_id}/`)});
+    res.json({ file: fs.readdirSync(`uploads/${req.body.business_id}/`) });
     //file removed
-  } catch(err) {
+  } catch (err) {
     console.error(err)
   }
 });
@@ -113,180 +113,184 @@ app.post('/delete', (req, res) => {
 
 
 app.post('/signup', (req, res) => {
-  
+
   crypto.randomBytes(64, (err, buf) => {
     crypto.pbkdf2(req.body.password, buf.toString('base64'), 123583, 64, 'sha512', (err, key) => {
-	req.body['salt'] = buf.toString('base64');
-        req.body['password']= key.toString('base64'); 
-	connection.query('insert into users set ?', req.body ,function(err,result){
-		res.json({result : result, err:err});
-	    });
-
+      req.body['salt'] = buf.toString('base64');
+      req.body['password'] = key.toString('base64');
+      connection.query('insert into users set ?', req.body, function (err, result) {
+        res.json({ result: result, err: err });
       });
+
+    });
   })
 });
 
 app.post('/signupByCode', (req, res) => {
   crypto.randomBytes(64, (err, buf) => {
-    crypto.pbkdf2(req.body.password, buf.toString('base64'), 123583, 64, 'sha512',(err, key) => {
-	req.body['salt'] = buf.toString('base64');
-	req.body['password']= key.toString('base64'); 
-	connection.query('insert into users set ?', req.body ,function(err,result){
-		res.json({result : result, err:err});
-	});
+    crypto.pbkdf2(req.body.password, buf.toString('base64'), 123583, 64, 'sha512', (err, key) => {
+      req.body['salt'] = buf.toString('base64');
+      req.body['password'] = key.toString('base64');
+      connection.query('insert into users set ?', req.body, function (err, result) {
+        res.json({ result: result, err: err });
+      });
     });
   })
 });
 
 app.post('/signin', (req, res) => {
-	console.log("hello1");
-	connection.query('SELECT * from users where BINARY id=?', [req.body.id] , (error, rows) => {
-	if(rows[0]){	
-	crypto.pbkdf2(req.body.password, rows[0].salt, 123583, 64, 'sha512', (err, key) => {
-		console.log("hello2");
-		if(rows[0].password == key.toString('base64')){
-			res.send(rows);
-		}
-		else{
-			res.send();
-		}
-	});}
-	else{
-		res.send();
-		console.log("hello3");
-	}
-})});
+  console.log("hello1");
+  connection.query('SELECT * from users where BINARY id=?', [req.body.id], (error, rows) => {
+    if (rows[0]) {
+      crypto.pbkdf2(req.body.password, rows[0].salt, 123583, 64, 'sha512', (err, key) => {
+        console.log("hello2");
+        if (rows[0].password == key.toString('base64')) {
+          res.send(rows);
+        }
+        else {
+          res.send();
+        }
+      });
+    }
+    else {
+      res.send();
+      console.log("hello3");
+    }
+  })
+});
 
 app.post('/signinByCode', (req, res) => {
-	connection.query('SELECT * from users where BINARY code=?', [req.body.code] , (error,rows) => {
-	  if(rows[0]){
-	    crypto.pbkdf2(req.body.code, rows[0].salt, 123583, 64, 'sha512', (err,key) => {
-	      if(rows[0].password == key.toString('base64')){
-		res.send(rows);
-	      }
-	      else{
-		res.send();
-	      }
-	    });
-	  }
-	  else{
-	    res.send();
-	  }
-})});
+  connection.query('SELECT * from users where BINARY code=?', [req.body.code], (error, rows) => {
+    if (rows[0]) {
+      crypto.pbkdf2(req.body.code, rows[0].salt, 123583, 64, 'sha512', (err, key) => {
+        if (rows[0].password == key.toString('base64')) {
+          res.send(rows);
+        }
+        else {
+          res.send();
+        }
+      });
+    }
+    else {
+      res.send();
+    }
+  })
+});
 
 app.post('/changePassword', (req, res) => {
-	crypto.randomBytes(64, (err, buf) => {
-		crypto.pbkdf2(req.body.password, buf.toString('base64'), 123583, 64, 'sha512', (err, key) => {
-			let salt = buf.toString('base64'); 
-			req.body['password']= key.toString('base64');
-			connection.query('UPDATE users SET password=?, salt=? WHERE id=?', [req.body.password, salt , req.body.id] ,function(err,result){
-					res.json({result : 'success'});
-			});
-		});
+  crypto.randomBytes(64, (err, buf) => {
+    crypto.pbkdf2(req.body.password, buf.toString('base64'), 123583, 64, 'sha512', (err, key) => {
+      let salt = buf.toString('base64');
+      req.body['password'] = key.toString('base64');
+      connection.query('UPDATE users SET password=?, salt=? WHERE id=?', [req.body.password, salt, req.body.id], function (err, result) {
+        res.json({ result: 'success' });
+      });
+    });
 
-	})
+  })
 });
-app.post('/changeSign',(req,res)=>{
-	connection.query('UPDATE users SET sign=? WHERE id=?', [req.body.sign, req.body.id] ,function(err,result){
-		res.json({result : 'success'});
-	});
-});
-
-app.post('/changeApple',(req,res)=>{
-  connection.query('UPDATE users SET sign=?, email=?, name=? WHERE id=?', [req.body.sign, req.body.email, req.body.name, req.body.id] ,function(err,result){
-    res.json({result : 'success'});
+app.post('/changeSign', (req, res) => {
+  connection.query('UPDATE users SET sign=? WHERE id=?', [req.body.sign, req.body.id], function (err, result) {
+    res.json({ result: 'success' });
   });
 });
 
-app.post('/changeName',(req,res)=>{
-	connection.query('UPDATE users SET name=? WHERE id=?', [req.body.name, req.body.id] ,function(err,result){
-	  connection.query('UPDATE worker SET workername2=? WHERE workername=?', [req.body.name, req.body.id] ,function(err,result){
-		
-		res.json({result : 'success'});
-	  });});
+app.post('/changeApple', (req, res) => {
+  connection.query('UPDATE users SET sign=?, email=?, name=? WHERE id=?', [req.body.sign, req.body.email, req.body.name, req.body.id], function (err, result) {
+    res.json({ result: 'success' });
+  });
+});
+
+app.post('/changeName', (req, res) => {
+  connection.query('UPDATE users SET name=? WHERE id=?', [req.body.name, req.body.id], function (err, result) {
+    connection.query('UPDATE worker SET workername2=? WHERE workername=?', [req.body.name, req.body.id], function (err, result) {
+
+      res.json({ result: 'success' });
+    });
+  });
 });
 app.post('/addBusiness', (req, res) => {
   console.log(req.body)
-  connection.query('insert into business set ?', req.body ,function(err,result){
-   	console.log(err); 
-	  res.json({err:err,result:result});
+  connection.query('insert into business set ?', req.body, function (err, result) {
+    console.log(err);
+    res.json({ err: err, result: result });
   });
 });
 app.post('/writeContractform', (req, res) => {
   //console.log(req.body);
-  if(req.body.types1){
-  req.body.types1 = JSON.stringify(req.body.types1);
-  req.body.types2 = JSON.stringify(req.body.types2);
-  req.body.types3 = JSON.stringify(req.body.types3);
-  req.body.types4 = JSON.stringify(req.body.types4);
-  req.body.value4 = JSON.stringify(req.body.value4);
+  if (req.body.types1) {
+    req.body.types1 = JSON.stringify(req.body.types1);
+    req.body.types2 = JSON.stringify(req.body.types2);
+    req.body.types3 = JSON.stringify(req.body.types3);
+    req.body.types4 = JSON.stringify(req.body.types4);
+    req.body.value4 = JSON.stringify(req.body.value4);
   }
-  console.log(req.body.types1, req.body.types2, req.body.types3, req.body.types4); 
-  if(req.body.id == '/'){
+  console.log(req.body.types1, req.body.types2, req.body.types3, req.body.types4);
+  if (req.body.id == '/') {
     req.body.id = req.session.name
   }
   console.log(req.body)
   //req.body.id = req.session.name;
-  connection.query('insert into contractform set ?', req.body ,function(err,result){
+  connection.query('insert into contractform set ?', req.body, function (err, result) {
     console.log(err);
-    res.json({result : 'success'});
+    res.json({ result: 'success' });
   });
 });
 
 app.post('/writeContractform2', (req, res) => {
-  if(req.body.types1){
+  if (req.body.types1) {
     req.body.types1 = JSON.stringify(req.body.types1);
     req.body.types2 = JSON.stringify(req.body.types2);
     req.body.types3 = JSON.stringify(req.body.types3);
   }
-  if(req.body.id == '/'){
-     req.body.id = req.session.name
+  if (req.body.id == '/') {
+    req.body.id = req.session.name
   }
   console.log(req.body)
-  connection.query('insert into contractform2 set ?', req.body ,function(err,result){
-      console.log(err);
-      res.json({result : 'success'});
+  connection.query('insert into contractform2 set ?', req.body, function (err, result) {
+    console.log(err);
+    res.json({ result: 'success' });
   });
 });
 app.post('/selectContractform2', (req, res) => {
 
-	  console.log(req.body);
+  console.log(req.body);
 
-	  let id='';
+  let id = '';
 
-	  if( req.body.id ){
+  if (req.body.id) {
 
-		      id= req.body.id
+    id = req.body.id
 
-		    }
+  }
 
-	  else{
+  else {
 
-		      id= req.session.name
+    id = req.session.name
 
-		    }
+  }
 
-	  console.log(id, req.body.bang)
+  console.log(id, req.body.bang)
 
-	  connection.query('SELECT * from contractform2 where id=? and bang=?', [id, req.body.bang] , (error, rows) => {
-			console.log(error);
-		      if (error) throw error;
+  connection.query('SELECT * from contractform2 where id=? and bang=?', [id, req.body.bang], (error, rows) => {
+    console.log(error);
+    if (error) throw error;
 
-		      console.log(rows);
+    console.log(rows);
 
-		      res.send(rows);
+    res.send(rows);
 
-		    });
+  });
 
 });
 
 app.post('/selectContractformAll', (req, res) => {
 
-	connection.query('SELECT * from contractform where bang=?', [req.body.bang] , (error, rows) => {
-	console.log(req.body.id + " " + error);
-		console.log('selectContractformAll is: ', rows);
-		res.send(rows);
-	  });
+  connection.query('SELECT * from contractform where bang=?', [req.body.bang], (error, rows) => {
+    console.log(req.body.id + " " + error);
+    console.log('selectContractformAll is: ', rows);
+    res.send(rows);
+  });
 });
 
 
@@ -296,15 +300,15 @@ app.post('/selectContractformAll', (req, res) => {
 
 app.post('/alterState', (req, res) => {
   console.log(req.body)
-  if(req.body.id == '/'){
+  if (req.body.id == '/') {
     req.body.id = req.session.name
   }
   //req.body.id = req.session.name;
-  connection.query('UPDATE worker SET state=?, pay=?, mon=?, tue=?, wed=?, thu=?, fri=?, sat=?, sun=?, eachtime=?, startdate=?, enddate=? WHERE business=? and workername=?', [req.body.type, req.body.pay, req.body.mon, req.body.tue, req.body.wed, req.body.thu, req.body.fri, req.body.sat, req.body.sun,req.body.eachtime,req.body.startdate, req.body.enddate, req.body.bang, req.body.id ] ,function(err,result){
+  connection.query('UPDATE worker SET state=?, pay=?, mon=?, tue=?, wed=?, thu=?, fri=?, sat=?, sun=?, eachtime=?, startdate=?, enddate=? WHERE business=? and workername=?', [req.body.type, req.body.pay, req.body.mon, req.body.tue, req.body.wed, req.body.thu, req.body.fri, req.body.sat, req.body.sun, req.body.eachtime, req.body.startdate, req.body.enddate, req.body.bang, req.body.id], function (err, result) {
 
-	    
-	console.log(err);
-    res.json({result : 'success'});
+
+    console.log(err);
+    res.json({ result: 'success' });
   });
 });
 
@@ -312,29 +316,29 @@ app.post('/alterState', (req, res) => {
 app.post('/updateContractform', (req, res) => {
   console.log(req.body)
   //req.body.id = req.session.name;
-  connection.query('UPDATE contractform SET EmployeeAddress=?, EmployeePhone=?, EmployeeName=?, type=? WHERE Employer=? and Employee=?', [req.body.EmployeeAddress, req.body.EmployeePhone, req.body.EmployeeName, req.body.type, req.body.Employer, req.body.Employee ] ,function(err,result){
+  connection.query('UPDATE contractform SET EmployeeAddress=?, EmployeePhone=?, EmployeeName=?, type=? WHERE Employer=? and Employee=?', [req.body.EmployeeAddress, req.body.EmployeePhone, req.body.EmployeeName, req.body.type, req.body.Employer, req.body.Employee], function (err, result) {
     console.log(err);
-    res.json({result : 'success'});
+    res.json({ result: 'success' });
   });
 });
 app.post('/updateContractform2', (req, res) => {
-	console.log(req.body.type)	
-	connection.query('UPDATE contractform2 SET EmployeeAddress=?, EmployeePhone=?, EmployeeName=?, type=? WHERE bang=? and id=?', [req.body.EmployeeAddress, req.body.EmployeePhone, req.body.EmployeeName, req.body.type, req.body.bang, req.body.id ] ,function(err,result){
-       	console.log(err); 
-		res.json({result : 'success'});
-    });
+  console.log(req.body.type)
+  connection.query('UPDATE contractform2 SET EmployeeAddress=?, EmployeePhone=?, EmployeeName=?, type=? WHERE bang=? and id=?', [req.body.EmployeeAddress, req.body.EmployeePhone, req.body.EmployeeName, req.body.type, req.body.bang, req.body.id], function (err, result) {
+    console.log(err);
+    res.json({ result: 'success' });
+  });
 });
 app.post('/selectContractform', (req, res) => {
   console.log(req.body);
-  let id='';
-  if( req.body.id ){
-    id= req.body.id
+  let id = '';
+  if (req.body.id) {
+    id = req.body.id
   }
-  else{
-    id= req.session.name
+  else {
+    id = req.session.name
   }
   console.log(id, req.body.bang)
-  connection.query('SELECT * from contractform where id=? and bang=?', [id, req.body.bang] , (error, rows) => {
+  connection.query('SELECT * from contractform where id=? and bang=?', [id, req.body.bang], (error, rows) => {
     if (error) throw error;
     console.log(error);
     res.send(rows);
@@ -342,156 +346,165 @@ app.post('/selectContractform', (req, res) => {
 });
 // otherAllowance
 app.post('/selectReceivedMessage', (req, res) => {
-  
-  connection.query('SELECT * from message where t=? and ft=0', [req.body.t] , (error, rows) => {
+
+  connection.query('SELECT * from message where t=? and ft=0', [req.body.t], (error, rows) => {
     console.log(error);
     res.send(rows);
   });
 });
 
 app.post('/delMessage', (req, res) => {
-	console.log(req.body.ind);
-	connection.query('DELETE from message where ind=?', [req.body.ind] , (error, rows) => {
-		res.send({result:'success'});
-		//console.log(error, rows);
-	});	
+  console.log(req.body.ind);
+  connection.query('DELETE from message where ind=?', [req.body.ind], (error, rows) => {
+    res.send({ result: 'success' });
+    //console.log(error, rows);
+  });
 });
 app.post('/delBusiness', (req, res) => {
   console.log(req.body.bang);
-  connection.query('DELETE from business where bname=?',[req.body.bang] , (error, rows) => {
-  connection.query('DELETE from contractform where bang=?',[req.body.bang] , (error, rows) => {
-connection.query('DELETE from contractform2 where bang=?',[req.body.bang] , (error, rows) => {
-connection.query('DELETE from overtimework where business=?',[req.body.bang] , (error, rows) => {
-connection.query('DELETE from timelog where bang=?',[req.body.bang] , (error, rows) => {
-connection.query('DELETE from worktodo where bang=?',[req.body.bang] , (error, rows) => {
-connection.query('SELECT * from worker where business=?', [req.body.bang] , (error, rows) => {
-	for(let i=0 ; i<rows.length ; i++){
-	  console.log(rows[i].workername)
-	  connection.query('SELECT * from users where id=?', [rows[i].workername] , (error,rows2) => { 
-	    console.log(rows2[0].bang);
-	    let bangs = JSON.parse(rows2[0].bang);
-	    delete bangs[req.body.bang];
-	    console.log(bangs);
-	    bangs = JSON.stringify(bangs);
-	    connection.query('UPDATE users SET bang=? WHERE id=?', [bangs, rows[i].workername] ,function(err,result){
-		console.log(err) 
-	    });
+  connection.query('DELETE from business where bname=?', [req.body.bang], (error, rows) => {
+    connection.query('DELETE from contractform where bang=?', [req.body.bang], (error, rows) => {
+      connection.query('DELETE from contractform2 where bang=?', [req.body.bang], (error, rows) => {
+        connection.query('DELETE from overtimework where business=?', [req.body.bang], (error, rows) => {
+          connection.query('DELETE from timelog where bang=?', [req.body.bang], (error, rows) => {
+            connection.query('DELETE from worktodo where bang=?', [req.body.bang], (error, rows) => {
+              connection.query('SELECT * from worker where business=?', [req.body.bang], (error, rows) => {
+                for (let i = 0; i < rows.length; i++) {
+                  console.log(rows[i].workername)
+                  connection.query('SELECT * from users where id=?', [rows[i].workername], (error, rows2) => {
+                    console.log(rows2[0].bang);
+                    let bangs = JSON.parse(rows2[0].bang);
+                    delete bangs[req.body.bang];
+                    console.log(bangs);
+                    bangs = JSON.stringify(bangs);
+                    connection.query('UPDATE users SET bang=? WHERE id=?', [bangs, rows[i].workername], function (err, result) {
+                      console.log(err)
+                    });
 
-	  }); 
-	}
-	
-connection.query('DELETE from worker where business=?',[req.body.bang] , (error, rows) => {
-	console.log("hehehehe"); 
-	res.send({result:'success'});
-});});});});});
-  
-});});});
+                  });
+                }
+
+                connection.query('DELETE from worker where business=?', [req.body.bang], (error, rows) => {
+                  console.log("hehehehe");
+                  res.send({ result: 'success' });
+                });
+              });
+            });
+          });
+        });
+
+      });
+    });
+  });
 });
 
 app.post('/selectReceivedNewMessage', (req, res) => {
-	console.log(req.body.t);
-	connection.query('SELECT * from message where t=? and r=0 and ft=0', [req.body.t] , (error, rows) => {
-			      //console.log(rows);
-			      res.send(rows);
-		  });
+  console.log(req.body.t);
+  connection.query('SELECT * from message where t=? and r=0 and ft=0', [req.body.t], (error, rows) => {
+    //console.log(rows);
+    res.send(rows);
+  });
 });
 
 app.post('/addBang', (req, res) => {
-  connection.query('SELECT * from users where id=?', [req.body.id] , (error, rows) => {
-	  console.log(error);
-	  let b = JSON.parse(rows[0].bang);
+  connection.query('SELECT * from users where id=?', [req.body.id], (error, rows) => {
+    console.log(error);
+    let b = JSON.parse(rows[0].bang);
     console.log(req.body);
-    b[req.body.bang]=1;
+    b[req.body.bang] = 1;
     console.log(b)
     let bang = JSON.stringify(b);
-    
-	console.log("????", bang, req.body.id);
-	  connection.query('UPDATE users SET bang=? WHERE id=?', [bang, req.body.id] ,function(err,result){
+
+    console.log("????", bang, req.body.id);
+    connection.query('UPDATE users SET bang=? WHERE id=?', [bang, req.body.id], function (err, result) {
       console.log(err);
-      res.json({result : 'success'});
+      res.json({ result: 'success' });
     });
   });
 });
 
 app.post('/selectSentMessage', (req, res) => {
-  
-  connection.query('SELECT * from message where f=? and ft=1', [req.body.id] , (error, rows) => {
+
+  connection.query('SELECT * from message where f=? and ft=1', [req.body.id], (error, rows) => {
     console.log(error);
 
     res.send(rows);
   });
 });
 app.post('/sendMessage', (req, res) => {
-  if(req.body.system==1 && req.body.type!=3){
-    req.body['message']= req.body.f + req.body['message'];
+  if (req.body.system == 1 && req.body.type != 3) {
+    req.body['message'] = req.body.f + req.body['message'];
   }
   req.body['ft'] = 0;
   console.log(req.body);
-  connection.query('insert into message set ?', req.body ,function(err,result){
-	req.body['ft'] = 1;
-	connection.query('insert into message set ?', req.body ,function(err,result){
-   		console.log(err); 
-	  	res.json({result : 'success'});
-	}); 
+  connection.query('insert into message set ?', req.body, function (err, result) {
+    req.body['ft'] = 1;
+    connection.query('insert into message set ?', req.body, function (err, result) {
+      console.log(err);
+      res.json({ result: 'success' });
+    });
   });
 });
 
 app.post('/alterReadMessage', (req, res) => {
-	connection.query('UPDATE message SET r=1 WHERE ind=?', [req.body.ind], function(err,result){
-		console.log(req.body.ind);	
-	console.log(err, result);res.send(result);	
-	});
+  connection.query('UPDATE message SET r=1 WHERE ind=?', [req.body.ind], function (err, result) {
+    console.log(req.body.ind);
+    console.log(err, result); res.send(result);
+  });
 });
 
 app.post('/updateCommute', (req, res) => {
-  
-  connection.query('SELECT bang from users where id=?', [req.body.id] , (error, rows) => {
+
+  connection.query('SELECT bang from users where id=?', [req.body.id], (error, rows) => {
     console.log(error); console.log(rows);
     let row = JSON.parse(rows[0].bang);
-    row[req.body.bang] = row[req.body.bang]==1?0:1;
-    console.log(JSON.stringify(row)+" "+ req.session.name+"3");
-    connection.query('UPDATE users SET bang=? WHERE id=?', [JSON.stringify(row), req.body.id] ,function(err,result){
+    row[req.body.bang] = row[req.body.bang] == 1 ? 0 : 1;
+    console.log(JSON.stringify(row) + " " + req.session.name + "3");
+    connection.query('UPDATE users SET bang=? WHERE id=?', [JSON.stringify(row), req.body.id], function (err, result) {
       //res.json({result : 'success'});
     });
-   console.log(req.session.name+"2");
-    let h = (String(new Date().getHours())<10?'0'+String(new Date().getHours()):String(new Date().getHours()));
-    let m = (String(new Date().getMinutes())<10?'0'+String(new Date().getMinutes()):String(new Date().getMinutes()));
+    console.log(req.session.name + "2");
+    let h = (String(new Date().getHours()) < 10 ? '0' + String(new Date().getHours()) : String(new Date().getHours()));
+    let m = (String(new Date().getMinutes()) < 10 ? '0' + String(new Date().getMinutes()) : String(new Date().getMinutes()));
 
     console.log(h, m, req.session.name, new Date().getDate())
-    
-if(row[req.body.bang]==0){
-	connection.query('select * from timelog where bang=? and workername=? and year=? and month=? and date=?', [req.body.bang, req.body.id, new Date().getFullYear(),new Date().getMonth()+1, new Date().getDate()] , (err,rows) => {
-		console.log(err); 
-		if(rows.length==0){
-			console.log("11111");  
-			connection.query('insert into timelog set ?', {bang:req.body.bang, workername:req.body.id, year:new Date().getFullYear(),month:new Date().getMonth()+1, date:new Date().getDate() , goto:h+m} ,function(err,row){
-				console.log(err); res.json({result : 'b'});
-			});
-		}
-		else{
-			console.log("2222");
-	connection.query('UPDATE timelog SET goto=? WHERE bang=? and workername=? and year=? and month=? and date=? and leavee=?', [(h+m) , req.body.bang, req.body.id, (new Date().getFullYear()), (new Date().getMonth()+1), new Date().getDate(),rows[0].leavee] ,function(err,result){
-				console.log(err, result); res.json({result:'b'});
-			});}}); }
-	else{
-		connection.query('select * from timelog where bang=? and workername=? and year=? and month=? and date=?', [req.body.bang, req.body.id, new Date().getFullYear(),new Date().getMonth()+1, new Date().getDate()] , (err,rows) => {
+
+    if (row[req.body.bang] == 0) {
+      connection.query('select * from timelog where bang=? and workername=? and year=? and month=? and date=?', [req.body.bang, req.body.id, new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()], (err, rows) => {
         console.log(err);
-        if(rows.length==0){
-           console.log("11111"); 
-	   connection.query('insert into timelog set ?', {bang:req.body.bang, workername:req.body.id, year:new Date().getFullYear(),month:new Date().getMonth()+1, date:new Date().getDate() , leavee:h+m} ,function(err,row){
-            console.log(err); res.json({result : 'a'});
+        if (rows.length == 0) {
+          console.log("11111");
+          connection.query('insert into timelog set ?', { bang: req.body.bang, workername: req.body.id, year: new Date().getFullYear(), month: new Date().getMonth() + 1, date: new Date().getDate(), goto: h + m }, function (err, row) {
+            console.log(err); res.json({ result: 'b' });
           });
         }
-        else{
-		console.log("2222");
-          connection.query('UPDATE timelog SET leavee=? WHERE bang=? and workername=? and year=? and month=? and date=? and goto=?', [(h+m) , req.body.bang, req.body.id, (new Date().getFullYear()), (new Date().getMonth()+1), new Date().getDate(), rows[0].goto] ,function(err,result){
-            console.log(err, result); res.json({result:'a'})
+        else {
+          console.log("2222");
+          connection.query('UPDATE timelog SET goto=? WHERE bang=? and workername=? and year=? and month=? and date=? and leavee=?', [(h + m), req.body.bang, req.body.id, (new Date().getFullYear()), (new Date().getMonth() + 1), new Date().getDate(), rows[0].leavee], function (err, result) {
+            console.log(err, result); res.json({ result: 'b' });
+          });
+        }
+      });
+    }
+    else {
+      connection.query('select * from timelog where bang=? and workername=? and year=? and month=? and date=?', [req.body.bang, req.body.id, new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()], (err, rows) => {
+        console.log(err);
+        if (rows.length == 0) {
+          console.log("11111");
+          connection.query('insert into timelog set ?', { bang: req.body.bang, workername: req.body.id, year: new Date().getFullYear(), month: new Date().getMonth() + 1, date: new Date().getDate(), leavee: h + m }, function (err, row) {
+            console.log(err); res.json({ result: 'a' });
+          });
+        }
+        else {
+          console.log("2222");
+          connection.query('UPDATE timelog SET leavee=? WHERE bang=? and workername=? and year=? and month=? and date=? and goto=?', [(h + m), req.body.bang, req.body.id, (new Date().getFullYear()), (new Date().getMonth() + 1), new Date().getDate(), rows[0].goto], function (err, result) {
+            console.log(err, result); res.json({ result: 'a' })
           });
         }
       });
     }
 
-    
+
   });
 });
 
@@ -501,55 +514,55 @@ app.post('/', (req, res) => {
 
 });
 app.post('/searchId', (req, res) => {
-  connection.query('SELECT * from users where name like ?', '%'+req.body.name+'%' , (error, rows) => {
+  connection.query('SELECT * from users where name like ?', '%' + req.body.name + '%', (error, rows) => {
     res.send(rows);
   });
 });
 app.post('/selectUsername', (req, res) => {
-	connection.query('SELECT * from users where id=?', [req.body.id] , (error,rows) => {
-		res.send(rows);
-	});
+  connection.query('SELECT * from users where id=?', [req.body.id], (error, rows) => {
+    res.send(rows);
+  });
 });
 
 
 app.post('/addWorker', (req, res) => {
   console.log()
-  connection.query('insert into worker set ?', req.body ,function(err,result){
-    console.log(err,result)
-    res.json({result : 'success'});
+  connection.query('insert into worker set ?', req.body, function (err, result) {
+    console.log(err, result)
+    res.json({ result: 'success' });
   });
 });
 
 app.post('/addWork', (req, res) => {
   console.log(req.body)
   console.log("dd")
-  connection.query(`SELECT * from overtimework where business=? and day=? and month=? and date=? and year=? and workername=?`, [req.body.business, req.body.day, req.body.month, req.body.date, req.body.year, req.body.workername] , (error, rows) => {
-	console.log(error);    
-if(rows.length == 0){
-      connection.query('insert into overtimework set ?', req.body ,function(err,result){
+  connection.query(`SELECT * from overtimework where business=? and day=? and month=? and date=? and year=? and workername=?`, [req.body.business, req.body.day, req.body.month, req.body.date, req.body.year, req.body.workername], (error, rows) => {
+    console.log(error);
+    if (rows.length == 0) {
+      connection.query('insert into overtimework set ?', req.body, function (err, result) {
         console.log("a");
-        res.json({result : 'success'});
+        res.json({ result: 'success' });
       });
     }
-    else{
+    else {
       console.log(req.body.subt);
-      connection.query('UPDATE overtimework SET time=?, subt=? WHERE business=? and day=? and month=? and date=? and year=? and workername=?', [req.body.time, req.body.subt, req.body.business, req.body.day, req.body.month, req.body.date, req.body.year, req.body.workername] ,function(err,result){
+      connection.query('UPDATE overtimework SET time=?, subt=? WHERE business=? and day=? and month=? and date=? and year=? and workername=?', [req.body.time, req.body.subt, req.body.business, req.body.day, req.body.month, req.body.date, req.body.year, req.body.workername], function (err, result) {
         console.log(err, result);
-        res.json({result : 'success'});
+        res.json({ result: 'success' });
       });
     }
-  });  
+  });
 });
-app.post('/updateBusiness', (req, res) => { 
-console.log(req.body);
-	connection.query('UPDATE business SET bnumber=?, name=?, bphone=?, baddress=?, stamp=?, fivep=? WHERE id=? and bname=?', [req.body.bnumber, req.body.name, req.body.bphone, req.body.baddress, req.body.stamp, req.body.fivep, req.body.id, req.body.bname] ,function(err,result){
-			console.log(err, result);
-			res.json({result : 'success'});
-		});
+app.post('/updateBusiness', (req, res) => {
+  console.log(req.body);
+  connection.query('UPDATE business SET bnumber=?, name=?, bphone=?, baddress=?, stamp=?, fivep=? WHERE id=? and bname=?', [req.body.bnumber, req.body.name, req.body.bphone, req.body.baddress, req.body.stamp, req.body.fivep, req.body.id, req.body.bname], function (err, result) {
+    console.log(err, result);
+    res.json({ result: 'success' });
+  });
 })
 app.post('/selectBusiness', (req, res) => {
-  connection.query('SELECT * from business where id=?', [req.body.id] , (error, rows) => {
-   console.log(error); 
+  connection.query('SELECT * from business where id=?', [req.body.id], (error, rows) => {
+    console.log(error);
     //console.log('User info is: ', rows);
     //res.cookie('token',rows.id);
     res.send(rows);
@@ -557,16 +570,16 @@ app.post('/selectBusiness', (req, res) => {
 });
 app.post('/selectBusinessByName', (req, res) => {
 
-	connection.query('SELECT * from business where bname=?', [req.body.bname] , (error, rows) => {
-	console.log(req.body.bname + " " + error);
-		console.log('User info is: ', rows);
-		res.send(rows);
-	  });
+  connection.query('SELECT * from business where bname=?', [req.body.bname], (error, rows) => {
+    console.log(req.body.bname + " " + error);
+    console.log('User info is: ', rows);
+    res.send(rows);
+  });
 });
 app.post('/selectWorkerByType', (req, res) => {
-  console.log(req.body.business+" + "+ req.body.type);
-  connection.query('SELECT * from worker where business=? and type=?', [req.body.business, req.body.type] , (error, rows) => {
-   console.log(error); 
+  console.log(req.body.business + " + " + req.body.type);
+  connection.query('SELECT * from worker where business=? and type=?', [req.body.business, req.body.type], (error, rows) => {
+    console.log(error);
     console.log('worker info is: ', rows);
     //res.cookie('token',rows.id);
     res.send(rows);
@@ -578,40 +591,37 @@ app.post('/selectWorkerByType', (req, res) => {
 
 app.post('/otherAllowanceAll', (req, res) => {
 
-	connection.query('SELECT * from otherAllowance where bang=? and year=? and month=?', [req.body.bang, req.body.year, req.body.month] , (error, rows) => {
-	  console.log(req.body.id + " " + error);
-		console.log('otherAllowanceAll is: ', rows);
-		res.send(rows);
-	  });
+  connection.query('SELECT * from otherAllowance where bang=? and year=? and month=?', [req.body.bang, req.body.year, req.body.month], (error, rows) => {
+    console.log(req.body.id + " " + error);
+    console.log('otherAllowanceAll is: ', rows);
+    res.send(rows);
+  });
 });
 
 
 app.post('/otherAllowance', (req, res) => {
 
-	connection.query('SELECT * from otherAllowance where id=? and year=? and month=?', [req.body.id, req.body.year, req.body.month] , (error, rows) => {
-	console.log(req.body.id + " " + error);
-		console.log('otherAllowance is: ', rows);
-		res.send(rows);
-	  });
+  connection.query('SELECT * from otherAllowance where id=? and year=? and month=?', [req.body.id, req.body.year, req.body.month], (error, rows) => {
+    console.log(req.body.id + " " + error);
+    console.log('otherAllowance is: ', rows);
+    res.send(rows);
+  });
 });
 
 app.post('/AdditionalAllowance', (req, res) => {
 
-	connection.query('SELECT * from otherAllowance where bang=?', [req.body.bang] , (error, rows) => {
-	console.log(req.body.id + " " + error);
-		console.log('AdditionalAllowance is: ', rows);
-		res.send(rows);
-	  });
+  connection.query('SELECT * from otherAllowance where bang=?', [req.body.bang], (error, rows) => {
+    console.log(req.body.id + " " + error);
+    console.log('AdditionalAllowance is: ', rows);
+    res.send(rows);
+  });
 });
 
 app.post('/insertAllowance', (req, res) => {
-  connection.query('insert into otherAllowance set ?', 
-  {},	 
-  (error, rows) => {
-	console.log(req.body.id + " " + error);
-		console.log('insertAllowance is: ', rows);
-		res.send(rows);
-	  });
+  connection.query('insert into otherAllowance set ?', req.body, function (err, result) {
+    console.log("otherAllowance");
+    res.json({ result: 'success' });
+  });
 });
 
 
@@ -621,29 +631,29 @@ app.post('/insertAllowance', (req, res) => {
 
 app.post('/insurancePercentage', (req, res) => {
 
-	connection.query('SELECT * from insurancePercentage where bang=?', [req.body.bang], (error, rows) => {
-	console.log(req.body.bang + " " + error);
+  connection.query('SELECT * from insurancePercentage where bang=?', [req.body.bang], (error, rows) => {
+    console.log(req.body.bang + " " + error);
 
-//app.post('/insurancePercentage', (req, res) => {
+    //app.post('/insurancePercentage', (req, res) => {
 
-//	connection.query('SELECT * from insurancePercentage', (error, rows) => {
-	//console.log(req.body.bname + " " + error);
-		console.log('User info is: ', rows);
-		res.send(rows);
-	  });
+    //	connection.query('SELECT * from insurancePercentage', (error, rows) => {
+    //console.log(req.body.bname + " " + error);
+    console.log('User info is: ', rows);
+    res.send(rows);
+  });
 });
 
 app.post('/insurancePercentageYear', (req, res) => {
 
-	connection.query('SELECT * from insurancePercentage where bang=? and date=? ', [req.body.bang, req.body.date], (error, rows) => {
-		console.log('insurancePercentageYear: ', rows);
-		res.send(rows);
-	  });
+  connection.query('SELECT * from insurancePercentage where bang=? and date=? ', [req.body.bang, req.body.date], (error, rows) => {
+    console.log('insurancePercentageYear: ', rows);
+    res.send(rows);
+  });
 });
 
 app.post('/selectWorker', (req, res) => {
-  connection.query('SELECT * from worker where state=2 and business=?', [req.body.business] , (error, rows) => {
-   console.log(error); 
+  connection.query('SELECT * from worker where state=2 and business=?', [req.body.business], (error, rows) => {
+    console.log(error);
     console.log('worker info is: ', rows);
     //res.cookie('token',rows.id);
     res.send(rows);
@@ -651,14 +661,14 @@ app.post('/selectWorker', (req, res) => {
 });
 app.post('/selectWorkerEach', (req, res) => {
   let workername = '';
-  if(req.body.workername){
+  if (req.body.workername) {
     workername = req.body.workername;
   }
-  else{
+  else {
     workername = req.session.name;
   }
-  connection.query('SELECT * from worker where business=? and workername2=?', [req.body.business,workername] , (error, rows) => {
-   console.log(error); 
+  connection.query('SELECT * from worker where business=? and workername2=?', [req.body.business, workername], (error, rows) => {
+    console.log(error);
     console.log('worker info is: ', rows);
     //res.cookie('token',rows.id);
     res.send(rows);
@@ -666,30 +676,30 @@ app.post('/selectWorkerEach', (req, res) => {
 });
 
 app.post('/selectBusinessByWorker', (req, res) => {
-  connection.query('SELECT * from users where id=?', [req.body.id] , (error, rows) => {
-	console.log(error);    
-	  if (error) throw error;
+  connection.query('SELECT * from users where id=?', [req.body.id], (error, rows) => {
+    console.log(error);
+    if (error) throw error;
     console.log('worker info is: ', rows);
     //res.cookie('token',rows.id);
     res.send(rows);
   });
 });
 app.post('/deletedWorker', (req, res) => {
-  connection.query('SELECT * from retireWorker where business_id=?', [req.body.business_id] , (error, rows) => {
+  connection.query('SELECT * from retireWorker where business_id=?', [req.body.business_id], (error, rows) => {
     console.log('deletedWorker info is: ', rows);
     res.send(rows);
   });
 })
 app.post('/deleteWorker', (req, res) => {
-	connection.query('SELECT * from users where id=?', [req.body.workername] , (error, rows) => {
+  connection.query('SELECT * from users where id=?', [req.body.workername], (error, rows) => {
 
-		let bangs = JSON.parse(rows[0].bang);
-		delete bangs[req.body.business];	
-		console.log(bangs);
-		bangs = JSON.stringify(bangs);
-		connection.query('UPDATE users SET bang=? WHERE id=?', [bangs, req.body.workername] ,function(err,result){
-			console.log(err)
-		});
+    let bangs = JSON.parse(rows[0].bang);
+    delete bangs[req.body.business];
+    console.log(bangs);
+    bangs = JSON.stringify(bangs);
+    connection.query('UPDATE users SET bang=? WHERE id=?', [bangs, req.body.workername], function (err, result) {
+      console.log(err)
+    });
   });
 
   let sql = `INSERT INTO retireWorker (business_id, user_id, year, month, date, reason) VALUES (?, ?, ?, ?, ?, ?)`
@@ -704,176 +714,177 @@ app.post('/deleteWorker', (req, res) => {
     sql,
     [business_id, user_id, year, month, date, reason],
     (error, rows) => {
-  });
-	
-  connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
-    connection.query('UPDATE worker SET workState=? WHERE business=? and workername=?', [1, req.body.business, req.body.workername] ,function(err,result){
+    });
+
+  connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername], (error, rows) => {
+    connection.query('UPDATE worker SET workState=? WHERE business=? and workername=?', [1, req.body.business, req.body.workername], function (err, result) {
       console.log(err)
-      res.json({result : 'success'});
+      res.json({ result: 'success' });
     });
   });
 
 
   // 근로자 삭제해도 정보는 삭제안되게.
-	// connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
-	// if(rows[0].type==2){
-	// 	connection.query('DELETE from contractform where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
-	// 	)}else{
-	// 	connection.query('DELETE from contractform2 where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
-	// 	)}
-	// });
-	
-	// connection.query('DELETE from worker where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
-	// 	connection.query('DELETE from overtimework where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
-	// 	console.log("error : "+error); 
-	// 	});
-	// });
+  // connection.query(`SELECT * from worker where business=? and workername=?`, [req.body.business, req.body.workername] , (error, rows) => {
+  // if(rows[0].type==2){
+  // 	connection.query('DELETE from contractform where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
+  // 	)}else{
+  // 	connection.query('DELETE from contractform2 where bang=? and id=?', [req.body.business, req.body.workername] , (error, rows) => {}
+  // 	)}
+  // });
 
-	// connection.query('DELETE from timelog where bang=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
-	// 	console.log("error : "+error);
-	// });
-	
-	// connection.query('DELETE from worktodo where bang=? and worker=?', [req.body.business, req.body.workername] , (error, rows) => {
-	// 		console.log("error : "+error);
-	// 		res.send(rows);
-	// });
+  // connection.query('DELETE from worker where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
+  // 	connection.query('DELETE from overtimework where business=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
+  // 	console.log("error : "+error); 
+  // 	});
+  // });
+
+  // connection.query('DELETE from timelog where bang=? and workername=?', [req.body.business, req.body.workername] , (error, rows) => {
+  // 	console.log("error : "+error);
+  // });
+
+  // connection.query('DELETE from worktodo where bang=? and worker=?', [req.body.business, req.body.workername] , (error, rows) => {
+  // 		console.log("error : "+error);
+  // 		res.send(rows);
+  // });
 
 });
 
 
 app.post('/selectImg', (req, res) => {
-  
-	console.log(__dirname);
+
+  console.log(__dirname);
   res.send('<img src="./public/11.jpg"/>');
 });
 
 app.post('/selectOvertimework', (req, res) => {
   console.log(req.body);
-  connection.query(`SELECT * from overtimework where business=? and year=? and month=?`, [req.body.business, req.body.year, req.body.month] , (error, rows) => {
-    console.log(error) 
+  connection.query(`SELECT * from overtimework where business=? and year=? and month=?`, [req.body.business, req.body.year, req.body.month], (error, rows) => {
+    console.log(error)
     console.log('+++++++++++++++++++++++++ ', rows);
-      //res.cookie('token',rows.id);
-      res.send(rows);
+    //res.cookie('token',rows.id);
+    res.send(rows);
   });
 });
 
 app.post('/selectTimelog', (req, res) => {
   console.log(req.body);
   console.log(">>>>>>>>>>>>>>>")
-  connection.query(`SELECT * from timelog where bang=? and year=? and month=? and date=?`, [req.body.bang, req.body.year, req.body.month, req.body.date] , (error, rows) => {
-    console.log(error); 
+  connection.query(`SELECT * from timelog where bang=? and year=? and month=? and date=?`, [req.body.bang, req.body.year, req.body.month, req.body.date], (error, rows) => {
+    console.log(error);
     console.log('worker info is: ', rows);
-      //res.cookie('token',rows.id);
-      res.send(rows);
+    //res.cookie('token',rows.id);
+    res.send(rows);
   });
 });
 
 app.post('/selectTimelogAsWorker', (req, res) => {
-  connection.query(`SELECT * from timelog where bang=? and workername=? and year=? and month=? and date=?`,[req.body.bang,req.body.workername, req.body.year, req.body.month, req.body.date] , (error, rows) => {
+  connection.query(`SELECT * from timelog where bang=? and workername=? and year=? and month=? and date=?`, [req.body.bang, req.body.workername, req.body.year, req.body.month, req.body.date], (error, rows) => {
     res.send(rows);
   });
 });
 
 app.post('/selectWorkTodo', (req, res) => {
-  console.log(req.body); 
-  connection.query(`SELECT * from worktodo where bang=? and year=? and month=? and date=? and worker=?`, [req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker] , (error, rows) => {
-   console.log(error); 
+  console.log(req.body);
+  connection.query(`SELECT * from worktodo where bang=? and year=? and month=? and date=? and worker=?`, [req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker], (error, rows) => {
+    console.log(error);
     console.log('Todo List is: ', rows);
-	  console.log(rows);
-      //res.cookie('token',rows.id);
-      res.send(rows);
+    console.log(rows);
+    //res.cookie('token',rows.id);
+    res.send(rows);
   });
 });
 app.post('/addWorkTodo', (req, res) => {
-  let todo1={}, todo2='';
+  let todo1 = {}, todo2 = '';
   console.log(req.body);
   console.log(">>>>>>>>>>>>>>>")
-  connection.query(`SELECT * from worktodo where bang=? and year=? and month=? and date=? and worker=?`, [req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker] , (error, rows) => {
-     console.log(error); 
-	  console.log(">>>>>>>>>>>>>>>2")
-    if(rows.length == 0){
+  connection.query(`SELECT * from worktodo where bang=? and year=? and month=? and date=? and worker=?`, [req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker], (error, rows) => {
+    console.log(error);
+    console.log(">>>>>>>>>>>>>>>2")
+    if (rows.length == 0) {
       console.log(">>>>>>>>>>>>>>>3")
-      req.body.todo = `{"${req.body.todo}":0}`      
-      connection.query('insert into worktodo set ?',req.body ,function(err,result){
-        console.log(">>>>>>>>>>>>>>>4",err,result)
-        res.json({result : 'success'});
+      req.body.todo = `{"${req.body.todo}":0}`
+      connection.query('insert into worktodo set ?', req.body, function (err, result) {
+        console.log(">>>>>>>>>>>>>>>4", err, result)
+        res.json({ result: 'success' });
       });
     }
-    else{
+    else {
       console.log(">>>>>>>>>>>>>>>5")
-      if(rows[0].todo!='{}'){
+      if (rows[0].todo != '{}') {
         todo1 = JSON.parse(rows[0].todo);
       }
-      todo1[req.body.todo]=0;
+      todo1[req.body.todo] = 0;
       todo2 = JSON.stringify(todo1);
       console.log(todo2);
-      connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo2, req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker] ,function(err,result){
+      connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo2, req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker], function (err, result) {
         console.log(err)
-        res.json({result : 'success'});
+        res.json({ result: 'success' });
       });
     }
   });
- 
+
 });
 
 app.post('/addWorkTodoCheck', (req, res) => {
   let todo = JSON.stringify(req.body.todo)
   let worker;
-	console.log(req.body);
-	connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo, req.body.bang, req.body.year, req.body.month, req.body.date, req.body.id] ,function(err,result){
+  console.log(req.body);
+  connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo, req.body.bang, req.body.year, req.body.month, req.body.date, req.body.id], function (err, result) {
     console.log(err, result)
-	res.send(result);
+    res.send(result);
   });
 });
 
 app.post('/deleteWorkTodo', (req, res) => {
-  let todo1={}, todo2='';
+  let todo1 = {}, todo2 = '';
   console.log(req.body);
   console.log(">>>>>>>>>>>>>>>")
-  connection.query(`SELECT * from worktodo where bang=? and year=? and month=? and date=? and worker=?`, [req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker] , (error, rows) => {
-     console.log(error); 
-	  todo1 = JSON.parse(rows[0].todo);
-      console.log(req.body.key);
-      delete todo1[req.body.key];
-      todo2 = JSON.stringify(todo1);
-      console.log(todo2);
-      connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo2, req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker] ,function(err,result){
-        console.log(err)
-        res.json({result : 'success'});
-      });
+  connection.query(`SELECT * from worktodo where bang=? and year=? and month=? and date=? and worker=?`, [req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker], (error, rows) => {
+    console.log(error);
+    todo1 = JSON.parse(rows[0].todo);
+    console.log(req.body.key);
+    delete todo1[req.body.key];
+    todo2 = JSON.stringify(todo1);
+    console.log(todo2);
+    connection.query('UPDATE worktodo SET todo=? WHERE bang=? and year=? and month=? and date=? and worker=?', [todo2, req.body.bang, req.body.year, req.body.month, req.body.date, req.body.worker], function (err, result) {
+      console.log(err)
+      res.json({ result: 'success' });
+    });
   });
- 
+
 });
 app.post('/selectSign', (req, res) => {
   let r;
-	console.log("id2:");
-	console.log(req.body.id2);
-  if(req.body.id=='/'){
-	req.body.id=req.session.name;
+  console.log("id2:");
+  console.log(req.body.id2);
+  if (req.body.id == '/') {
+    req.body.id = req.session.name;
   }
-  connection.query(`SELECT * from users where id=?`, [req.body.id] , (error, rows) => {
-   connection.query(`SELECT * from users where id=?`, [req.body.id2] , (error, rows2) => { 
-	rows.push(rows2[0]); 
-	  console.log(error, rows)
-    res.send(rows)
-   });});
+  connection.query(`SELECT * from users where id=?`, [req.body.id], (error, rows) => {
+    connection.query(`SELECT * from users where id=?`, [req.body.id2], (error, rows2) => {
+      rows.push(rows2[0]);
+      console.log(error, rows)
+      res.send(rows)
+    });
+  });
 });
 app.post('/selectWorkerAsDay', (req, res) => {
-  let r,rr;
-  connection.query(`SELECT * from worker where business=? and ${req.body.day} IS NOT NULL`, [req.body.business] , (error, rows) => {
-   console.log(error); 
-	  if (error) throw error;
+  let r, rr;
+  connection.query(`SELECT * from worker where business=? and ${req.body.day} IS NOT NULL`, [req.body.business], (error, rows) => {
+    console.log(error);
+    if (error) throw error;
     console.log('===========================================', rows);
-      //res.cookie('token',rows.id);
-      r = rows;
+    //res.cookie('token',rows.id);
+    r = rows;
   });
   console.log(req.body);
-  connection.query(`SELECT * from overtimework where business=? and day=? and month=? and date=? and year=?`, [req.body.business, req.body.day, req.body.month, req.body.date, req.body.year] , (error, rows) => {
-  	rr = rows; 
-	  /*console.log(error); 
-	  if (error) throw error;
+  connection.query(`SELECT * from overtimework where business=? and day=? and month=? and date=? and year=?`, [req.body.business, req.body.day, req.body.month, req.body.date, req.body.year], (error, rows) => {
+    rr = rows;
+    /*console.log(error); 
+    if (error) throw error;
 	
-	console.log('...........................................', rows[0]);
+  console.log('...........................................', rows[0]);
     //res.cookie('token',rows.id);
       let n=r.length
       if(n==0){
@@ -912,30 +923,30 @@ app.post('/selectWorkerAsDay', (req, res) => {
         }
       }
     }
-*/      
+*/
     console.log('========================');
-    res.send({ori:r, alter:rr});
+    res.send({ ori: r, alter: rr });
   });
-  
+
 });
 app.post('/selectWorkerAsDayAsWorker', (req, res) => {
-  let r,rr;
-  connection.query(`SELECT * from worker where business=? and workername=? and ${req.body.day} IS NOT NULL`, [req.body.business, req.body.workername] , (error, rows) => {			  
-	if(error) throw error;
-	console.log('===========================================', rows);
-	//res.cookie('token',rows.id);
-	r = rows;
+  let r, rr;
+  connection.query(`SELECT * from worker where business=? and workername=? and ${req.body.day} IS NOT NULL`, [req.body.business, req.body.workername], (error, rows) => {
+    if (error) throw error;
+    console.log('===========================================', rows);
+    //res.cookie('token',rows.id);
+    r = rows;
   });
   console.log(req.body);
-  connection.query(`SELECT * from overtimework where business=? and day=? and month=? and date=? and year=?`, [req.body.business, req.body.day, req.body.month, req.body.date, req.body.year] , (error, rows) => {
+  connection.query(`SELECT * from overtimework where business=? and day=? and month=? and date=? and year=?`, [req.body.business, req.body.day, req.body.month, req.body.date, req.body.year], (error, rows) => {
     rr = rows;
-    res.send({ori:r, alter:rr});
-  
+    res.send({ ori: r, alter: rr });
+
   });
 });
 
 app.post('/otherAllowance', (req, res) => {
-  connection.query('SELECT * from message otherAllowance bang=? and id=? and year=? and month=?', [req.body.bang, req.body.id, req.body.year, req.body.month] , (error, rows) => {
+  connection.query('SELECT * from message otherAllowance bang=? and id=? and year=? and month=?', [req.body.bang, req.body.id, req.body.year, req.body.month], (error, rows) => {
     console.log(error);
     res.send(rows);
   });
@@ -950,31 +961,28 @@ app.post('/otherAllowance', (req, res) => {
 
 app.post('/selectVacation', (req, res) => {
 
-	connection.query('SELECT * from vacation where bang=?', [req.body.bang] , (error, rows) => {
-	console.log(req.body.id + " " + error);
-		console.log('selectVacation is: ', rows);
-		res.send(rows);
-	  });
+  connection.query('SELECT * from vacation where bang=?', [req.body.bang], (error, rows) => {
+    console.log(req.body.id + " " + error);
+    console.log('selectVacation is: ', rows);
+    res.send(rows);
+  });
 });
 
 app.post('/insertVacation', (req, res) => {
-  connection.query('insert into vacation set ?', 
-  {bang:req.body.bang, workername:req.body.workername, vacation:req.body.vacation, reason:req.body.reason, start_date:req.body.start_date, end_date:req.body.end_date},	 
-  (error, rows) => {
-	console.log(req.body.id + " " + error);
-		console.log('insertVacation is: ', rows);
-		res.send(rows);
-	  });
+  connection.query('insert into vacation set ?', req.body, function (err, result) {
+    console.log(req.body.id + " " + error);
+    res.json({ result: 'success' });
+  });
 });
 
 
 app.post('/dateVaction', (req, res) => {
 
-	connection.query('SELECT * from vacation where bang=? and start_date=?', [req.body.bang, req.body.start_date] , (error, rows) => {
-	console.log(req.body.id + " " + error);
-		console.log('dateVaction is: ', rows);
-		res.send(rows);
-	  });
+  connection.query('SELECT * from vacation where bang=? and start_date=?', [req.body.bang, req.body.start_date], (error, rows) => {
+    console.log(req.body.id + " " + error);
+    console.log('dateVaction is: ', rows);
+    res.send(rows);
+  });
 });
 
 
@@ -992,8 +1000,8 @@ app.post('/dateVaction', (req, res) => {
 
 /*app.post('/uploadContractform',upload.any(), (req, res) => {
   console.log("왜왜?");
-
-
+ 
+ 
   console.log(req.files);
 });*/
 app.post('/uploadContractform', upload.any(), handleUpload);
@@ -1002,7 +1010,7 @@ app.post('/uploadStamp', upload.any(), handleUpload);
 //https.createServer(options, app).listen(3000);
 
 let server = app.listen(app.get('port'), () => {
-    var host = server.address().address;
-    var port = server.address().port;
-    console.log('running at http://' + host + ':' + port)
-}) 
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log('running at http://' + host + ':' + port)
+})
