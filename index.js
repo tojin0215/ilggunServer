@@ -432,18 +432,39 @@ app.post('/selectSentMessage', (req, res) => {
   });
 });
 app.post('/sendMessage', (req, res) => {
+  // console.log(req);
   if (req.body.system == 1 && req.body.type != 3) {
     req.body['message'] = req.body.f + req.body['message'];
   }
-  req.body['ft'] = 0;
-  console.log(req.body);
-  connection.query('insert into message set ?', req.body, function (err, result) {
-    req.body['ft'] = 1;
-    connection.query('insert into message set ?', req.body, function (err, result) {
-      console.log(err);
-      res.json({ result: 'success' });
-    });
-  });
+
+  connection.query('select * from users where id = ?', [req.body.f], function (err, f_result) {
+
+    // console.log(f_result);
+    req.body.f_name = f_result[0].name;
+    connection.query('select * from users where id = ?', [req.body.t], function (err, t_result) {
+      req.body.t_name = t_result[0].name;
+
+      req.body['ft'] = 0;
+      // console.log(req.body);
+      connection.query('insert into message set ?', req.body, function (err, result) {
+        req.body['ft'] = 1;
+        connection.query('insert into message set ?', req.body, function (err, result) {
+          // console.log(err); 
+          res.json({ result: 'success' });
+        });
+      });
+    })
+  })
+
+  // req.body['ft'] = 0;
+  // console.log(req.body);
+  // connection.query('insert into message set ?', req.body ,function(err,result){
+  // req.body['ft'] = 1;
+  // connection.query('insert into message set ?', req.body ,function(err,result){
+  //  		console.log(err); 
+  //   	res.json({result : 'success'});
+  // }); 
+  // });
 });
 
 app.post('/alterReadMessage', (req, res) => {
@@ -628,25 +649,16 @@ app.post('/insertAllowance', (req, res) => {
 
 
 //insurancePercentage
-
 app.post('/insurancePercentage', (req, res) => {
-
-  connection.query('SELECT * from insurancePercentage where bang=?', [req.body.bang], (error, rows) => {
-    console.log(req.body.bang + " " + error);
-
-    //app.post('/insurancePercentage', (req, res) => {
-
-    //	connection.query('SELECT * from insurancePercentage', (error, rows) => {
-    //console.log(req.body.bname + " " + error);
-    console.log('User info is: ', rows);
+  const business_id = req.body.bang;
+  connection.query('SELECT * from insurancePercentage ORDER BY date desc', [], (error, rows) => {
     res.send(rows);
   });
 });
 
 app.post('/insurancePercentageYear', (req, res) => {
-
-  connection.query('SELECT * from insurancePercentage where bang=? and date=? ', [req.body.bang, req.body.date], (error, rows) => {
-    console.log('insurancePercentageYear: ', rows);
+  const business_id = req.body.bang;
+  connection.query('SELECT * from insurancePercentage where date=? ', [req.body.date], (error, rows) => {
     res.send(rows);
   });
 });
