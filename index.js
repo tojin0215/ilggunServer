@@ -988,11 +988,11 @@ app.post('/insertVacation', (req, res) => {
 });
 
 
-app.post('/dateVaction', (req, res) => {
+app.post('/dateVacation', (req, res) => {
 
-  connection.query('SELECT * from vacation where bang=? and start_date=?', [req.body.bang, req.body.start_date], (error, rows) => {
+  connection.query('SELECT * from vacation where bang=? and end_date>=?', [req.body.bang, req.body.end_date], (error, rows) => {
     console.log(req.body.id + " " + error);
-    console.log('dateVaction is: ', rows);
+    console.log('dateVacation is: ', rows);
     res.send(rows);
   });
 });
