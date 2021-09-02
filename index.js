@@ -981,7 +981,7 @@ app.post('/selectVacation', (req, res) => {
 });
 
 app.post('/insertVacation', (req, res) => {
-  connection.query('insert into vacation set ?', req.body, function (err, result) {
+  connection.query('insert into vacation set ?', req.body, (err, result) => {
     console.log(req.body.id + " " + error);
     res.json({ result: 'success' });
   });
