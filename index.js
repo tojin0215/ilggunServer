@@ -639,7 +639,7 @@ app.post('/AdditionalAllowance', (req, res) => {
 });
 
 app.post('/insertAllowance', (req, res) => {
-  connection.query(`SELECT * FROM otherAllowance where bang=? and id=?and year=? and month=?;`,
+  connection.query(`SELECT * FROM otherAllowance where bang=? and id=? and year=? and month=?;`,
     [req.body.bang, req.body.id, req.body.year, req.body.month], (error, rows) => {
       console.log(error);
       if (rows.length == 0) {
@@ -648,7 +648,7 @@ app.post('/insertAllowance', (req, res) => {
           res.json({ result: 'success' });
         });
       } else {
-        connection.query('update otherAllowance set t_bonus=t_bonus+?, t_extension=t_extension+?, t_position=t_position+?, t_etc=t_etc+?, f_carMaintenanceFee=f_carMaintenanceFee+?, f_childcareAllowance=f_childcareAllowance+?, f_meals=f_meals+? where bang=? and id=? and year=? and month=?;',
+        connection.query('update otherAllowance set t_bonus= t_bonus + ?, t_extension= t_extension + ?, t_position= t_position + ?, t_etc= t_etc + ?, f_carMaintenanceFee= f_carMaintenanceFee + ?, f_childcareAllowance= f_childcareAllowance + ?, f_meals= f_meals + ? where bang=? and id=? and year=? and month=?;',
           [req.body.t_bonus, req.body.t_extension, req.body.t_position, req.body.t_etc, req.body.f_carMaintenanceFee, req.body.f_childcareAllowance, req.body.f_meals,
           req.body.bang, req.body.id, req.body.year, req.body.month],
           function (err, result) {
