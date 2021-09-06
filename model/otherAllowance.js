@@ -3,12 +3,8 @@ export default (sequelize, DataTypes) => {
   return sequelize.define('otherAllowance', {
     bang: { type: DataTypes.STRING(200) },
     id: { type: DataTypes.STRING(50), defaultValue: '' },
-
-    date: { type: DataTypes.STRING(50) },
     year: { type: DataTypes.STRING(50) },
     month: { type: DataTypes.STRING(50) },
-    day: { type: DataTypes.STRING(50) },
-
     Salary: { type: DataTypes.STRING(200) },
 
     taxation: { type: DataTypes.STRING(200) },
