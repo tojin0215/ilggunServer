@@ -438,18 +438,21 @@ app.post('/sendMessage', (req, res) => {
   }
 
   connection.query('select * from users where id = ?', [req.body.f], function (err, f_result) {
+    console.error(err); 
 
     // console.log(f_result);
     req.body.f_name = f_result[0].name;
     connection.query('select * from users where id = ?', [req.body.t], function (err, t_result) {
+      console.error(err); 
       req.body.t_name = t_result[0].name;
 
       req.body['ft'] = 0;
       // console.log(req.body);
       connection.query('insert into message set ?', req.body, function (err, result) {
         req.body['ft'] = 1;
+        console.error(err); 
         connection.query('insert into message set ?', req.body, function (err, result) {
-          // console.log(err); 
+          console.error(err); 
           res.json({ result: 'success' });
         });
       });
@@ -699,6 +702,22 @@ app.post('/selectWorkerEach', (req, res) => {
     workername = req.session.name;
   }
   connection.query('SELECT * from worker where business=? and workername2=?', [req.body.business, workername], (error, rows) => {
+    console.log(error);
+    console.log('worker info is: ', rows);
+    //res.cookie('token',rows.id);
+    res.send(rows);
+  });
+});
+
+app.post('/businessWorker', (req, res) => {
+  let workername = '';
+  if (req.body.workername) {
+    workername = req.body.workername;
+  }
+  else {
+    workername = req.session.name;
+  }
+  connection.query('SELECT * from worker where business=? and workername=?', [req.body.business, workername], (error, rows) => {
     console.log(error);
     console.log('worker info is: ', rows);
     //res.cookie('token',rows.id);
