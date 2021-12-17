@@ -438,21 +438,21 @@ app.post('/sendMessage', (req, res) => {
   }
 
   connection.query('select * from users where id = ?', [req.body.f], function (err, f_result) {
-    console.error(err); 
+    console.error(err);
 
     // console.log(f_result);
     req.body.f_name = f_result[0].name;
     connection.query('select * from users where id = ?', [req.body.t], function (err, t_result) {
-      console.error(err); 
+      console.error(err);
       req.body.t_name = t_result[0].name;
 
       req.body['ft'] = 0;
       // console.log(req.body);
       connection.query('insert into message set ?', req.body, function (err, result) {
         req.body['ft'] = 1;
-        console.error(err); 
+        console.error(err);
         connection.query('insert into message set ?', req.body, function (err, result) {
-          console.error(err); 
+          console.error(err);
           res.json({ result: 'success' });
         });
       });
@@ -1035,8 +1035,10 @@ app.post('/dateVacation', (req, res) => {
   });
 });
 
-
-
+// rss 
+app.get('/rssBoard', (req, res) => {
+  connection.https('https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=Cv41nl')
+});
 
 
 
