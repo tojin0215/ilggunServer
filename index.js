@@ -1035,10 +1035,7 @@ app.post('/dateVacation', (req, res) => {
   });
 });
 
-// rss 
-app.get('/rssBoard', (req, res) => {
-  connection.https('https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=Cv41nl')
-});
+
 
 
 
