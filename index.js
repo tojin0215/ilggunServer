@@ -1036,6 +1036,22 @@ app.post('/dateVacation', (req, res) => {
 });
 
 
+app.get('/bizinfo', (req, res) => {
+  const rss = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=Cv41nl&dataType=json&searchLclasId=all&searchPldirJrsdCode=all&searchIndustCode=all&searchAreaCode=all"
+  fetch(rss, {
+    method: "get",
+    headers: {
+      'Constent-type': 'application/json'
+    },
+    body: JSON.stringify({
+    })
+  })
+    .then(result => result.json())
+    .then(result => {
+      console.log(result)
+    })
+})
+
 
 
 
