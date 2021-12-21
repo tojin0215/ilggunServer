@@ -1,4 +1,4 @@
-// const axios = require('axios');
+const axios = require('axios');
 const express = require('express');
 const session = require('express-session');
 const mysql = require('mysql');
@@ -1040,12 +1040,12 @@ app.post('/dateVacation', (req, res) => {
 
 
 
-// app.get('/bizinfo', (req, res) => {
-//   console.log(``)
-//   const rss = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=Cv41nl&dataType=json&searchLclasId=all&searchPldirJrsdCode=all&searchIndustCode=all&searchAreaCode=all"
-//   axios.get(rss)
-//     .then(response => res.send(response.data))
-// })
+app.get('/bizinfo', (req, res) => {
+  console.log(``)
+  const rss = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=Cv41nl&dataType=json&searchLclasId=all&searchPldirJrsdCode=all&searchIndustCode=all&searchAreaCode=all"
+  axios.get(rss)
+    .then(response => res.send(response.data))
+})
 
 
 
