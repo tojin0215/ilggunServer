@@ -1,3 +1,5 @@
+import fetch from "node-fetch";
+
 const express = require('express');
 const session = require('express-session');
 const mysql = require('mysql');
