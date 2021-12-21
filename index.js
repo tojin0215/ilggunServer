@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 const express = require('express');
 const session = require('express-session');
 const mysql = require('mysql');
@@ -1038,16 +1036,12 @@ app.post('/dateVacation', (req, res) => {
 });
 
 
+
+
 app.get('/bizinfo', (req, res) => {
   const rss = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=Cv41nl&dataType=json&searchLclasId=all&searchPldirJrsdCode=all&searchIndustCode=all&searchAreaCode=all"
-  fetch(rss, {
-    method: "get",
-    headers: {
-      'Constent-type': 'application/json'
-    },
-    body: JSON.stringify({
-    })
-  })
+
+  axios.get(rss)
     .then(result => result.json())
     .then(result => {
       res.send(result)
