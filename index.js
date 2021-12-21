@@ -1038,17 +1038,13 @@ app.post('/dateVacation', (req, res) => {
 
 
 
+
 app.get('/bizinfo', (req, res) => {
+  console.log(``)
   const rss = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=Cv41nl&dataType=json&searchLclasId=all&searchPldirJrsdCode=all&searchIndustCode=all&searchAreaCode=all"
-
   axios.get(rss)
-    .then(result => result.json())
-    .then(result => {
-      res.send(result)
-      console.log(result)
-    })
+    .then(response => res.send(response.data))
 })
-
 
 
 
