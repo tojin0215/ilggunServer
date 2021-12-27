@@ -1068,7 +1068,7 @@ app.get('/bizinfoSearch', (req, res) => {
       searchPldirJrsdCode: req.body.searchPldirJrsdCode,
       searchIndustCode: req.body.searchIndustCode,
       searchAreaCode: req.body.searchAreaCode,
-      searchCnt: req.body.searchIndustCode,
+      searchCnt: req.body.searchCnt,
     }
   }).then(response => res.send(response.data))
 
