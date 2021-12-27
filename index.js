@@ -1057,9 +1057,20 @@ app.get('/bizinfo100', (req, res) => {
 // searchLclasId:분야, searchPldirJrsdCode:소관, searchIndustCode:업종, searchAreaCode:지역
 app.get('/bizinfoSearch', (req, res) => {
   console.log(``)
-  const rss = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=Cv41nl&dataType=json&searchLclasId=?&searchPldirJrsdCode=?&searchIndustCode=?&searchAreaCode=?"
-  axios.get(rss, [req.body.searchLclasId, req.body.searchPldirJrsdCode, req.body.searchIndustCode, req.body.searchAreaCode])
-    .then(response => res.send(response.data))
+  const url = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do"
+  axios.get(url, {params: {
+    crtfcKey: "Cv41nl",
+    dataType: "json",
+    searchLclasId: req.body.searchLclasId,
+    searchPldirJrsdCode: req.body.searchPldirJrsdCode,
+    searchIndustCode: req.body.searchIndustCode,
+    searchAreaCode: req.body.searchIndustCode,
+    searchCnt: req.body.searchIndustCode,
+  }}).then(response => res.send(response.data))
+
+  // const rss = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=Cv41nl&dataType=json&searchLclasId=?&searchPldirJrsdCode=?&searchIndustCode=?&searchAreaCode=?"
+  // axios.get(rss, [req.body.searchLclasId, req.body.searchPldirJrsdCode, req.body.searchIndustCode, req.body.searchAreaCode])
+    // .then(response => res.send(response.data))
 })
 
 
