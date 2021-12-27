@@ -1058,20 +1058,19 @@ app.get('/bizinfo100', (req, res) => {
 
 // searchLclasId:분야, searchPldirJrsdCode:소관, searchIndustCode:업종, searchAreaCode:지역
 app.get('/bizinfoSearch', (req, res) => {
-  console.log(``)
   const url = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do"
   axios.get(url, {
     params: {
       crtfcKey: "Cv41nl",
       dataType: "json",
-      searchLclasId: req.body.searchLclasId,
-      searchPldirJrsdCode: req.body.searchPldirJrsdCode,
-      searchIndustCode: req.body.searchIndustCode,
-      searchAreaCode: req.body.searchAreaCode,
-      searchCnt: req.body.searchCnt,
+      searchLclasId: req.query.searchLclasId,
+      searchPldirJrsdCode: req.query.searchPldirJrsdCode,
+      searchIndustCode: req.query.searchIndustCode,
+      searchAreaCode: req.query.searchAreaCode,
+      searchCnt: req.query.searchCnt,
     }
   }).then(response => res.send(response.data))
-
+  .catch(error => {console.error(error), res.send([])});
 })
 
 
