@@ -1064,11 +1064,11 @@ app.get('/bizinfoSearch', (req, res) => {
     params: {
       crtfcKey: "Cv41nl",
       dataType: "json",
-      searchLclasId: req.body.searchLclasId,
-      searchPldirJrsdCode: req.body.searchPldirJrsdCode,
-      searchIndustCode: req.body.searchIndustCode,
-      searchAreaCode: req.body.searchAreaCode,
-      searchCnt: req.body.searchCnt,
+      searchLclasId: req.query.searchLclasId,
+      searchPldirJrsdCode: req.query.searchPldirJrsdCode,
+      searchIndustCode: req.query.searchIndustCode,
+      searchAreaCode: req.query.searchAreaCode,
+      searchCnt: req.query.searchCnt,
     }
   }).then(response => res.send(response.data))
 
