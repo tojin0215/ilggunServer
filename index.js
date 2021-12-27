@@ -1067,10 +1067,10 @@ app.get('/bizinfoSearch', (req, res) => {
       searchPldirJrsdCode: req.query.searchPldirJrsdCode,
       searchIndustCode: req.query.searchIndustCode,
       searchAreaCode: req.query.searchAreaCode,
-      searchCnt: req.query.searchCnt,
+      searchCnt: req.query.searchCnt == null ? 'all' : req.query.searchCnt,
     }
   }).then(response => res.send(response.data))
-  .catch(error => {console.error(error), res.send([])});
+    .catch(error => { console.error(error), res.send([]) });
 })
 
 
