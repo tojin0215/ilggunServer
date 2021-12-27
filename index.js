@@ -1066,8 +1066,7 @@ app.get('/bizinfoSearch', (req, res) => {
       searchLclasId: req.query.searchLclasId,
       searchPldirJrsdCode: req.query.searchPldirJrsdCode,
       searchIndustCode: req.query.searchIndustCode,
-      searchAreaCode: req.query.searchAreaCode,
-      searchCnt: req.query.searchCnt == null ? 'all' : req.query.searchCnt,
+      searchAreaCode: req.query.searchAreaCode
     }
   }).then(response => res.send(response.data))
     .catch(error => { console.error(error), res.send([]) });
