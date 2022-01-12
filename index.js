@@ -1038,7 +1038,7 @@ app.post('/dateVacation', (req, res) => {
 
 
 app.post('/addLoginHistory', (req, res) => {
-  connection.query('insert into loginHistroy set ?', req.body, (error, result) => {
+  connection.query('insert into loginHistory set ?', req.body, (error, result) => {
     console.log(req.body.id + " " + error);
     res.json({ result: 'success' });
   });
