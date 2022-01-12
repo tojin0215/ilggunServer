@@ -1044,6 +1044,13 @@ app.post('/addLoginHistory', (req, res) => {
   });
 });
 
+app.post('/addLoginHistoryWoker', (req, res) => {
+  connection.query('insert into loginHistoryWoker set ?', req.body, (error, result) => {
+    console.log(req.body.id + " " + error);
+    res.json({ result: 'success' });
+  });
+});
+
 
 
 app.get('/bizinfoAll', (req, res) => {

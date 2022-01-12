@@ -20,6 +20,7 @@ db.OvertimeWork = require('./overtimeWork')(sequelize, Sequelize); //운동 묶�
 db.TimeLog = require('./timelog')(sequelize, Sequelize); //매출
 db.Vacation = require('./vacation')(sequelize, Sequelize); //신규휴가
 db.LoginHistory = require('./loginHistory')(sequelize, Sequelize); //로그인기록
+db.LoginHistoryWoker = require('./loginHistoryWoker')(sequelize, Sequelize); //근로자로그인기록
 
 
 
